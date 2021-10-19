@@ -1,4 +1,4 @@
-// decontamination/removal of human reads using STAR aligner, followed by rRNA removal and deduplication
+// decontamination/removal of human reads using STAR aligner, followed by rRNA removal and deduplication to get microbial reads
 
 process DECONT_RNA {
 	label "process_high"
@@ -6,7 +6,7 @@ process DECONT_RNA {
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy'
 	
 	input:
-	path hg_fasta
+	path star_index
 	path ribokmers
 	tuple val(sample_id), path(reads_file)
 	
@@ -29,7 +29,7 @@ process DECONT_RNA {
 			 --runThreadN $task.cpus \
 			 --outSAMtype None \
 			 --readFilesCommand zcat \
-			 --genomeDir ${hg_fasta} \
+			 --genomeDir ${star_index} \
 			 --outFileNamePrefix ${sample_id}. \
 			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \
 			 --outReadsUnmapped Fastx
@@ -73,7 +73,7 @@ process DECONT_RNA {
 			 --runThreadN $task.cpus \
 			 --outSAMtype None \
 			 --readFilesCommand zcat \
-			 --genomeDir ${hg_fasta} \
+			 --genomeDir ${star_index} \
 			 --outFileNamePrefix ${sample_id}. \
 			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \
 			 --outReadsUnmapped Fastx

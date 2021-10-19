@@ -1,33 +1,3 @@
-#!/usr/bin/env nextflow
-
-/*
-========================================================================================
-    Shotgun metagenomics and metatranscriptomics 
-========================================================================================
-    Github : TBC
-----------------------------------------------------------------------------------------
-*/
-
-nextflow.enable.dsl=2
-
-/*
-========================================================================================
-    Define channels for read pairs
-========================================================================================
-*/
-
-//params.rna_reads = "$baseDir/data/raw_fastq/rna/*{1,2}.{fq.gz,fastq.gz}"
-//params.dna_reads = "$baseDir/data/raw_fastq/dna/*{1,2}.{fq.gz,fastq.gz}"
-
-if (params.process_rna){
-    Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkExists:true ).set{ ch_rna_input }
-}
-
-if (params.process_dna){
-    Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkExists:true ).set{ ch_dna_input }
-}
-
-
 /*
 ========================================================================================
     Help messages and warnings
@@ -104,43 +74,138 @@ if (params.help){
 }
 
 
+if (!params.rna_reads && !params.dna_reads){
+    helpMessage()
+    log.info"""
+    [Error] The path to at least one input folder for sequences is required
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.rna_reads && params.process_rna){
+    helpMessage()
+    log.info"""
+    [Error] The path to input RNA sequences is required because --process_rna is true
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.dna_reads && params.process_dna){
+    helpMessage()
+    log.info"""
+    [Error] The path to input DNA sequences is required because --process_dna is true
+    """.stripIndent()
+    exit 0
+}
+
+
+if (!params.hg_fasta && !params.decont_off && params.process_dna){
+    helpMessage()
+    log.info"""
+    [Error] --hg_fasta is required for removal of host (human) reads from metagenomic sequences (decontamination step)
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.star_index && !params.decont_off && params.process_rna){
+    helpMessage()
+    log.info"""
+    [Error] --star_index is required for removal of host (human) reads from metatranscriptomic sequences (decontamination step)
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.ribokmers && !params.decont_off && params.process_rna){
+    helpMessage()
+    log.info"""
+    [Error] --ribokmers is required for removal of rRNA reads (decontamination steps)
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.kraken2db && !params.profilers_off){
+    helpMessage()
+    log.info"""
+    [Error] --kraken2db is required for taxonomic classification
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.pangenome && !params.panalign_off){
+    helpMessage()
+    log.info"""
+    [Error] --pangenome is required for mapping of metatranscriptomes to gene catalog
+    """.stripIndent()
+    exit 0
+}
+
+if (!params.dmnddb && !params.diamond_off){
+    helpMessage()
+    log.info"""
+    [Error] --dmnddb is required for translated search
+    """.stripIndent()
+    exit 0
+}
+
 /*
 ========================================================================================
     Include modules
 ========================================================================================
 */
 
-include { FULL } from './workflows/full_workflow.nf'
-include { DECONT } from './workflows/decont.nf'
-include { PROFILE } from './workflows/classify.nf'
+include { FASTP } from './modules/fastp.nf'
+include { RIBOFILTER } from './modules/rRNAfilter.nf'
+include { DEDUP } from './modules/dedup.nf'
+include { KRAKEN2_RNA } from './modules/kraken_rna.nf'
+include { KRAKEN2_DNA } from './modules/kraken_dna.nf'
+include { BRACKEN } from './modules/bracken.nf'
+include { PANALIGN } from './modules/panalign.nf'
+include { DMND } from './modules/dmnd.nf'
+include { DECONT_DNA } from './modules/decont_dna.nf'
 
 /*
 ========================================================================================
-    Main workflow (default)
+    Workflow
 ========================================================================================
 */
 
+//https://bioinformatics.stackexchange.com/questions/15739/use-conditional-in-workflow-in-nextflow-dsl2
+//https://github.com/nextflow-io/patterns/blob/master/docs/conditional-process.adoc
+
 // this main workflow will generate all intermediate files and can be resumed with nextflow
-workflow {
+workflow FULL {
+    if ( params.process_rna ){
+        FASTP(params.star_index, ch_rna_input)
+        RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
+        DEDUP(RIBOFILTER.out.reads)
+        
+        if ( params.decont_off ) {
+            ch_rna_decont = ch_rna_input
+        } else if ( !params.decont_off && params.dedupe ){
+            ch_rna_decont = DEDUP.out.reads
+            } else if ( !params.decont_off && !params.dedupe ){
+            ch_rna_decont = RIBOFILTER.out.reads
+    }
+        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
+        PANALIGN(params.pangenome, ch_rna_decont)
+        DMND(params.dmnddb, PANALIGN.out.unaligned)
+    }
     
-    FULL ()
-     
+    if ( params.process_dna ){
+        DECONT_DNA(params.hg_fasta, ch_dna_input)
+        
+        if ( params.decont_off ) {
+            ch_dna_decont = ch_dna_input
+        } else if ( !params.decont_off ) {
+            ch_dna_decont = DECONT_DNA.out.reads
+        }
+        
+        KRAKEN2_DNA(params.kraken2db, ch_dna_decont)
+        BRACKEN(params.kraken2db, params.readlength, KRAKEN2_DNA.out.k2tax)
+    }  
 }
 
-//modular named workflows to reduce intermediate file size. 
-//warning: the decontaminate named workflow is not compatible with nextflow -resume because intermediate files are deleted to save space
-workflow decontaminate {
-    
-    DECONT ()
-}
 
-// This classify workflow can be resumed with nextflow
-// Typical use is to specify the path to already decontaminated reads with --rna_reads and/or --dna_reads
-// Assumes gzipped compressed reads
-workflow classify {
-    
-    PROFILE ()
-}
 
 
 

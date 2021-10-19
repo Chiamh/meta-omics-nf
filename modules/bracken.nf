@@ -4,8 +4,6 @@
 params.kraken2db is the path to a built Kraken2 database which also contains the Bracken database files
 */
 
-params.readlength = 150
-
 process BRACKEN {
 	label "process_small"
 	label "error_retry"

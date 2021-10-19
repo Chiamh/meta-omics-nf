@@ -9,7 +9,7 @@ process FASTP {
 	
 	
 	input:
-	path hg_fasta
+	path star_index
 	tuple val(sample_id), path(reads_file)
 	
 	output:
@@ -30,7 +30,7 @@ process FASTP {
 			 --runThreadN $task.cpus \
 			 --outSAMtype None \
 			 --readFilesCommand zcat \
-			 --genomeDir ${hg_fasta} \
+			 --genomeDir ${star_index} \
 			 --outFileNamePrefix ${sample_id}. \
 			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \
 			 --outReadsUnmapped Fastx
