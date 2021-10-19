@@ -124,6 +124,22 @@ if (!params.dmnddb && !params.diamond_off){
     exit 0
 }
 
+/*
+========================================================================================
+    Define channels for read pairs
+========================================================================================
+*/
+
+//params.rna_reads = "$baseDir/data/raw_fastq/rna/*{1,2}.{fq.gz,fastq.gz}"
+//params.dna_reads = "$baseDir/data/raw_fastq/dna/*{1,2}.{fq.gz,fastq.gz}"
+
+if (params.process_rna){
+    Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkExists:true ).set{ ch_rna_input }
+}
+
+if (params.process_dna){
+    Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkExists:true ).set{ ch_dna_input }
+}
 
 /*
 ========================================================================================
