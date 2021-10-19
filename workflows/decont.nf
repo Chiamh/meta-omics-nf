@@ -131,8 +131,8 @@ if (!params.ribokmers && !params.decont_off && params.process_rna){
 ========================================================================================
 */
 
-include { DECONT_RNA } from './modules/decont_rna.nf'
-include { DECONT_DNA } from './modules/decont_dna.nf'
+include { DECONT_RNA } from '../modules/decont_rna.nf'
+include { DECONT_DNA } from '../modules/decont_dna.nf'
 
 /*
 ========================================================================================

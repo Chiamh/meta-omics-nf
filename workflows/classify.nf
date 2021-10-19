@@ -131,11 +131,11 @@ if (!params.dmnddb && !params.diamond_off){
 ========================================================================================
 */
 
-include { KRAKEN2_RNA } from './modules/kraken_rna.nf'
-include { KRAKEN2_DNA } from './modules/kraken_dna.nf'
-include { BRACKEN } from './modules/bracken.nf'
-include { PANALIGN } from './modules/panalign.nf'
-include { DMND } from './modules/dmnd.nf'
+include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
+include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
+include { BRACKEN } from '../modules/bracken.nf'
+include { PANALIGN } from '../modules/panalign.nf'
+include { DMND } from '../modules/dmnd.nf'
 
 /*
 ========================================================================================
