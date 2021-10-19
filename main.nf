@@ -4,7 +4,7 @@
 ========================================================================================
     Shotgun metagenomics and metatranscriptomics 
 ========================================================================================
-    Github : TBC
+    Github : https://github.com/Chiamh/meta-omics-nf
 ----------------------------------------------------------------------------------------
 */
 
@@ -43,14 +43,14 @@ def helpMessage() {
     
     Usage for main workflow:
     The typical command for running the pipeline is as follows:
-      nextflow run main.nf \
-      --rna_reads FOLDER_FOR_RNA_READS \
-      --dna_reads FOLDER_FOR_DNA_READS \
-      --hg_fasta FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX \
-      --star_index FOLDER_FOR_STAR_INDEX_FOR_HUMAN_GENOME \
-      --ribokmers FOLDER_FOR_BBMAP_RIBOKMERS \
-      --kraken2db FOLDER_FOR_KRAKEN2_AND_BRACKEN_DB \
-      --pangenome FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX \
+      nextflow run main.nf
+      --rna_reads FOLDER_FOR_RNA_READS
+      --dna_reads FOLDER_FOR_DNA_READS
+      --hg_fasta FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX
+      --star_index FOLDER_FOR_STAR_INDEX_FOR_HUMAN_GENOME
+      --ribokmers FOLDER_FOR_BBMAP_RIBOKMERS
+      --kraken2db FOLDER_FOR_KRAKEN2_AND_BRACKEN_DB
+      --pangenome FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX
       --dmnddb FOLDER_FOR_DIAMOND2_DB
     
     IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respsectively. 
@@ -95,7 +95,9 @@ def helpMessage() {
     AWSBatch arguments:
       --awsregion                   The AWS Region for your AWS Batch job to run on [Default: false]
       --awsqueue                    The AWS queue for your AWS Batch job to run on [Default: false]
-    """.stripIndent()
+    Others:
+      --help		            Display this help message
+    """
 }
 
 if (params.help){
