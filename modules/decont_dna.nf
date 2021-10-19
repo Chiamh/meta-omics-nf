@@ -1,7 +1,5 @@
 // decontamination or removal of human reads from metagenomes
 
-params.hg_fasta = './genomes/hg38_with_IVT/hg38_with_IVT.fa'
-
 process DECONT_DNA {
 	label "process_medium"
 	label "error_retry"

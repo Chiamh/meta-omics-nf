@@ -1,10 +1,7 @@
-// decontamination/removal of human reads, followed by rRNA removal and deduplication
-
-params.hg_fasta = './genomes/hg38_with_IVT/hg38_with_IVT.fa'
-params.ribokmers = './databases/ribokmers.fa.gz'
+// decontamination/removal of human reads using STAR aligner, followed by rRNA removal and deduplication
 
 process DECONT_RNA {
-	label "process_medium"
+	label "process_high"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy'
 	
@@ -24,18 +21,39 @@ process DECONT_RNA {
 	
 	if (params.dedupe) {
 		"""
-		fastp -i ${reads_file[0]} -I ${reads_file[1]} --stdout -j ${sample_id}.json -h ${sample_id}.html | \
-		bwa mem -p -t $task.cpus ${hg_fasta} - | \
-		samtools fastq -f12 -F256 -1 ${sample_id}_fastp_1.fastq.gz -2 ${sample_id}_fastp_2.fastq.gz -
+		fastp -i ${reads_file[0]} -I ${reads_file[1]} \
+		--out1 ${sample_id}_fastp_1.fastq.gz --out2 ${sample_id}_fastp_2.fastq.gz \
+		-j ${sample_id}.json -h ${sample_id}.html
+		
+		STAR --runMode alignReads \
+			 --runThreadN $task.cpus \
+			 --outSAMtype None \
+			 --readFilesCommand zcat \
+			 --genomeDir ${hg_fasta} \
+			 --outFileNamePrefix ${sample_id}. \
+			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \
+			 --outReadsUnmapped Fastx
+		
+		if [ -f ${sample_id}.Unmapped.out.mate1 ]; then
+        mv ${sample_id}.Unmapped.out.mate1 ${sample_id}_unmapped_1.fastq
+        gzip ${sample_id}_unmapped_1.fastq
+		fi
+    	if [ -f ${sample_id}.Unmapped.out.mate2 ]; then
+        mv ${sample_id}.Unmapped.out.mate2 ${sample_id}_unmapped_2.fastq
+        gzip ${sample_id}_unmapped_2.fastq
+    	fi
+		
+		rm ${sample_id}_fastp_1.fastq.gz
+		rm ${sample_id}_fastp_2.fastq.gz
 	
-		bbduk.sh in=${sample_id}_fastp_1.fastq.gz in2=${sample_id}_fastp_1.fastq.gz \
+		bbduk.sh in=${sample_id}_unmapped_1.fastq.gz in2=${sample_id}_unmapped_2.fastq.gz \
 		out=${sample_id}_mRNA_1.fastq.gz out2=${sample_id}_mRNA_2.fastq.gz \
 		k=31 \
 		ref=${ribokmers} \
 		stats=${sample_id}_rRNAfilter.log
-	
-		rm ${sample_id}_fastp_1.fastq.gz
-		rm ${sample_id}_fastp_2.fastq.gz
+		
+		rm ${sample_id}_unmapped_1.fastq.gz
+		rm ${sample_id}_unmapped_2.fastq.gz
 	
 		clumpify.sh in=${sample_id}_mRNA_1.fastq.gz in2=${sample_id}_mRNA_2.fastq.gz \
 		out=${sample_id}_decont_1.fastq.gz out2=${sample_id}_decont_2.fastq.gz \
@@ -47,18 +65,40 @@ process DECONT_RNA {
 		"""
 		} else if (!params.dedupe){
 		"""
-		fastp -i ${reads_file[0]} -I ${reads_file[1]} --stdout -j ${sample_id}.json -h ${sample_id}.html | \
-		bwa mem -p -t $task.cpus ${hg_fasta} - | \
-		samtools fastq -f12 -F256 -1 ${sample_id}_fastp_1.fastq.gz -2 ${sample_id}_fastp_2.fastq.gz -
+		fastp -i ${reads_file[0]} -I ${reads_file[1]} \
+		--out1 ${sample_id}_fastp_1.fastq.gz --out2 ${sample_id}_fastp_2.fastq.gz \
+		-j ${sample_id}.json -h ${sample_id}.html
+		
+		STAR --runMode alignReads \
+			 --runThreadN $task.cpus \
+			 --outSAMtype None \
+			 --readFilesCommand zcat \
+			 --genomeDir ${hg_fasta} \
+			 --outFileNamePrefix ${sample_id}. \
+			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \
+			 --outReadsUnmapped Fastx
+		
+		if [ -f ${sample_id}.Unmapped.out.mate1 ]; then
+        mv ${sample_id}.Unmapped.out.mate1 ${sample_id}_unmapped_1.fastq
+        gzip ${sample_id}_unmapped_1.fastq
+		fi
+    	if [ -f ${sample_id}.Unmapped.out.mate2 ]; then
+        mv ${sample_id}.Unmapped.out.mate2 ${sample_id}_unmapped_2.fastq
+        gzip ${sample_id}_unmapped_2.fastq
+    	fi
+		
+		rm ${sample_id}_fastp_1.fastq.gz
+		rm ${sample_id}_fastp_2.fastq.gz
 	
-		bbduk.sh in=${sample_id}_fastp_1.fastq.gz in2=${sample_id}_fastp_1.fastq.gz \
+		bbduk.sh in=${sample_id}_unmapped_1.fastq.gz in2=${sample_id}_unmapped_2.fastq.gz \
 		out=${sample_id}_decont_1.fastq.gz out2=${sample_id}_decont_2.fastq.gz \
 		k=31 \
 		ref=${ribokmers} \
 		stats=${sample_id}_rRNAfilter.log
+		
+		rm ${sample_id}_unmapped_1.fastq.gz
+		rm ${sample_id}_unmapped_2.fastq.gz
 	
-		rm ${sample_id}_fastp_1.fastq.gz
-		rm ${sample_id}_fastp_2.fastq.gz	
 		"""
 		}
 }

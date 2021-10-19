@@ -2,8 +2,6 @@
 // If params.dedupe = false, then rRNA removal is the "final" step of decontamination
 //The publishDir should not be included within a condition statement. Use instead a conditional expression like so:
 // a ? b: c means if (a) b else c (ternary if special operator)
-params.outdir = './'
-params.ribokmers = './databases/ribokmers.fa.gz'
 
 process RIBOFILTER {
 	label "process_medium"

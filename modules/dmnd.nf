@@ -4,8 +4,6 @@
 Requires a pre-built diamond2 database. Can use uniref90 or similar. 
 */
 
-params.dmnddb = './databases/dmnd/uniref90_20210407'
-
 process DMND {
 	label "process_high"
 	label "error_retry"
@@ -29,7 +27,7 @@ process DMND {
 	diamond blastx --query "${read_file}" \
 	--id 80 --query-cover 90 --threads $task.cpus --max-target-seqs 1 \
 	-b6 \
-	--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore salltitles \
+	--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend qlen sstart send slen evalue bitscore salltitles \
 	--db "${dmnddb}" \
 	--out "${sample_id}_uniref90_aligned.out" \
 	--un "${sample_id}_uniref90_unaligned.fa" \

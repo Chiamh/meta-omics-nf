@@ -173,7 +173,7 @@ include { DECONT_DNA } from './modules/decont_dna.nf'
 workflow {
     if ( params.process_rna ){
         FASTP(params.hg_fasta, ch_rna_input)
-        RIBOFILTER(params.ribokmers, FASTP.out.reads)
+        RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
         DEDUP(RIBOFILTER.out.reads)
         
         if ( params.decont_off ) {

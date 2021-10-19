@@ -1,14 +1,8 @@
 // Kraken2 classification
 
 /*
-params.kraken2db is the path to a built Kraken2 database which also must contain:
-the taxonomy/nodes.dmp file
-and library sequences *.fna, *.fa, or *.fasta in the library directory.
-
 It is encouraged for users to run kraken2 with 10-20 threads. 
 */
-
-params.kraken2db = './databases/kraken2pfp'
 
 process KRAKEN2_RNA {
 	label "process_high"
@@ -31,7 +25,7 @@ process KRAKEN2_RNA {
 	"""
 	kraken2 --use-names --threads $task.cpus --db "${kraken2db}" \
 	--report "${sample_id}_kraken2.tax" --output "${sample_id}_kraken2.out" \
-	--gzip-compressed --paired reads_file[0] reads_file[1]
+	--gzip-compressed --paired ${reads_file[0]} ${reads_file[1]}
 	
 	"""
 }

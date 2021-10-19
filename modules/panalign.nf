@@ -1,11 +1,9 @@
-// Pangenome alignment for metatranscriptomes
+// Pangenome/gene catalog nucleotide alignment for metatranscriptomes
 
 /*
 Requires a pre-built pangenome with a bowtie2 index
 This process will concatenate the metatranscriptomic R1 and R2 files before bowtie2 mapping to pangenome.
 */
-
-params.pangenome = './databases/pangenome/*.{fa,fna,fasta}'
 
 process PANALIGN {
 	label "process_medium"
