@@ -27,16 +27,16 @@ process RIBOFILTER {
 	if (params.dedupe) {
 	
 	"""
-	bbduk.sh in=${reads_file[0]} in2=${reads_file[1]} \
-	out=${sample_id}_mRNA_1.fastq.gz out2=${sample_id}_mRNA_2.fastq.gz \
-	k=31 \
+	bbduk.sh in=${reads_file[0]} in2=${reads_file[1]} \\
+	out=${sample_id}_mRNA_1.fastq.gz out2=${sample_id}_mRNA_2.fastq.gz \\
+	k=31 \\
 	ref=${ribokmers} stats=${sample_id}_rRNAfilter.log
 	"""
 	} else if (params.dedupe == false){
 	"""
-	bbduk.sh in=${reads_file[0]} in2=${reads_file[1]} \
-	out=${sample_id}_decont_1.fastq.gz out2=${sample_id}_decont_2.fastq.gz \
-	k=31 \
+	bbduk.sh in=${reads_file[0]} in2=${reads_file[1]} \\
+	out=${sample_id}_decont_1.fastq.gz out2=${sample_id}_decont_2.fastq.gz \\
+	k=31 \\
 	ref=${ribokmers} stats=${sample_id}_rRNAfilter.log
 	"""
 	}

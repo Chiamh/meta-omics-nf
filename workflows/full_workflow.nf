@@ -16,13 +16,17 @@ def helpMessage() {
       nextflow run main.nf
       --rna_reads FOLDER_FOR_RNA_READS
       --dna_reads FOLDER_FOR_DNA_READS
-      --hg_fasta FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX
+      --bwaidx_path FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX
+      --bwaidx NAME_OF_BWA_INDEX
       --star_index FOLDER_FOR_STAR_INDEX_FOR_HUMAN_GENOME
       --ribokmers FOLDER_FOR_BBMAP_RIBOKMERS
       --kraken2db FOLDER_FOR_KRAKEN2_AND_BRACKEN_DB
-      --pangenome FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX
-      --dmnddb FOLDER_FOR_DIAMOND2_DB
+      --pangenome_path FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX
+	  --pangenome	NAME_OF_PANGENOME_BOWTIE2_INDEX
+      --dmnddb PATH_TO_DIAMOND2_DB
     
+	NOTE: A more user-friendly approach is to specify these parameters in a *.config file under a custom profile 
+	
     IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respsectively. 
     
     The main workflow can take up a lot of disk space with intermediate fastq files. 
@@ -43,12 +47,14 @@ def helpMessage() {
       --rna_reads                   Path to a folder containing all input metatranscriptomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
       --dna_reads                   Path to a folder containing all input metagenomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
     Database arguments:
-      --hg_fasta                    Path to the host (human) reference genome with bwa index in the same folder
+      --bwaidx_path                 Path to the folder with host (human) reference genome and bwa index
+      --bwaidx			    Name of the bwa index e.g. hg38.fa
       --star_index                  Path to the directory containing the index for the human genome for STAR aligner
       --ribokmers                   Path to the eukaryotic and prokaryotic ribokmer database for computational rRNA removal using BBmap
       --kraken2db                   Path to the Kraken2 and Bracken databases
-      --pangenome                   Path to a custom-built microbial pangenome with bowtie2 index
-      --dmnddb                      Path to a custom-build Diamond 2 database (usually Uniref90)  
+      --pangenome_path              Path to the folder with bowtie2 index for custom-built microbial pangenome/gene catalog
+      --pangenome                   Name of the bowtie2 index for the pangenome/gene catalog e.g. IHSMGC
+      --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)  
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
@@ -66,7 +72,7 @@ def helpMessage() {
       --awsregion                   The AWS Region for your AWS Batch job to run on [Default: false]
       --awsqueue                    The AWS queue for your AWS Batch job to run on [Default: false]
     Others:
-      --help 			    Display this help message
+      --help		            Display this help message
     """
 }
 
@@ -74,6 +80,7 @@ if (params.help){
     helpMessage()
     exit 0
 }
+
 
 
 if (!params.rna_reads && !params.dna_reads){
@@ -101,10 +108,10 @@ if (!params.dna_reads && params.process_dna){
 }
 
 
-if (!params.hg_fasta && !params.decont_off && params.process_dna){
+if (!params.bwaidx_path && !params.decont_off && params.process_dna){
     helpMessage()
     log.info"""
-    [Error] --hg_fasta is required for removal of host (human) reads from metagenomic sequences (decontamination step)
+    [Error] --bwaidx_path is required for removal of host (human) reads from metagenomic sequences (decontamination step)
     """.stripIndent()
     exit 0
 }
@@ -133,10 +140,10 @@ if (!params.kraken2db && !params.profilers_off){
     exit 0
 }
 
-if (!params.pangenome && !params.panalign_off){
+if (!params.pangenome_path && !params.panalign_off){
     helpMessage()
     log.info"""
-    [Error] --pangenome is required for mapping of metatranscriptomes to gene catalog
+    [Error] --pangenome_path is required for mapping of metatranscriptomes to gene catalog
     """.stripIndent()
     exit 0
 }
@@ -207,12 +214,12 @@ workflow FULL {
             ch_rna_decont = RIBOFILTER.out.reads
     }
         KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
-        PANALIGN(params.pangenome, ch_rna_decont)
+        PANALIGN(params.pangenome_path, ch_rna_decont)
         DMND(params.dmnddb, PANALIGN.out.unaligned)
     }
     
     if ( params.process_dna ){
-        DECONT_DNA(params.hg_fasta, ch_dna_input)
+        DECONT_DNA(params.bwaidx_path, ch_dna_input)
         
         if ( params.decont_off ) {
             ch_dna_decont = ch_dna_input

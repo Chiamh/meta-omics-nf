@@ -23,7 +23,7 @@ process BRACKEN {
 	
 	script:
 	"""	
-	bracken -d "${kraken2db}" -i "${sample_id}.kraken2.tax" \
+	bracken -d "${kraken2db}" -i "${sample_id}.kraken2.tax" \\
 	-o "${sample_id}.bracken.out" -w "${sample_id}.bracken.tax" -r "${readlength}" -l S
 		
 	"""

@@ -23,8 +23,8 @@ process KRAKEN2_RNA {
 
 	script:
 	"""
-	kraken2 --use-names --threads $task.cpus --db "${kraken2db}" \
-	--report "${sample_id}_kraken2.tax" --output "${sample_id}_kraken2.out" \
+	kraken2 --use-names --threads $task.cpus --db "${kraken2db}" \\
+	--report "${sample_id}_kraken2.tax" --output "${sample_id}_kraken2.out" \\
 	--gzip-compressed --paired ${reads_file[0]} ${reads_file[1]}
 	
 	"""

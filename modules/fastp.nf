@@ -22,17 +22,17 @@ process FASTP {
 	
 	script:
 	"""
-	fastp -i ${reads_file[0]} -I ${reads_file[1]} \
-		--out1 ${sample_id}_fastp_1.fastq.gz --out2 ${sample_id}_fastp_2.fastq.gz \
+	fastp -i ${reads_file[0]} -I ${reads_file[1]} \\
+		--out1 ${sample_id}_fastp_1.fastq.gz --out2 ${sample_id}_fastp_2.fastq.gz \\
 		-j ${sample_id}.json -h ${sample_id}.html
 		
-		STAR --runMode alignReads \
-			 --runThreadN $task.cpus \
-			 --outSAMtype None \
-			 --readFilesCommand zcat \
-			 --genomeDir ${star_index} \
-			 --outFileNamePrefix ${sample_id}. \
-			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \
+		STAR --runMode alignReads \\
+			 --runThreadN $task.cpus \\
+			 --outSAMtype None \\
+			 --readFilesCommand zcat \\
+			 --genomeDir ${star_index} \\
+			 --outFileNamePrefix ${sample_id}. \\
+			 --readFilesIn ${sample_id}_fastp_1.fastq.gz ${sample_id}_fastp_2.fastq.gz \\
 			 --outReadsUnmapped Fastx
 		
 		if [ -f ${sample_id}.Unmapped.out.mate1 ]; then

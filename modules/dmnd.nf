@@ -24,13 +24,13 @@ process DMND {
 	
 	script:
 	"""	
-	diamond blastx --query "${read_file}" \
-	--id 80 --query-cover 90 --threads $task.cpus --max-target-seqs 1 \
-	-b6 \
-	--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend qlen sstart send slen evalue bitscore salltitles \
-	--db "${dmnddb}" \
-	--out "${sample_id}_uniref90_aligned.out" \
-	--un "${sample_id}_uniref90_unaligned.fa" \
+	diamond blastx --query "${read_file}" \\
+	--id 80 --query-cover 90 --threads $task.cpus --max-target-seqs 1 \\
+	-b6 \\
+	--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend qlen sstart send slen evalue bitscore salltitles \\
+	--db "${dmnddb}" \\
+	--out "${sample_id}_uniref90_aligned.out" \\
+	--un "${sample_id}_uniref90_unaligned.fa" \\
 	--unfmt fasta 2>"${sample_id}_dmnd.log"
 	"""
 }

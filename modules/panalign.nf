@@ -12,7 +12,7 @@ process PANALIGN {
 	publishDir "${params.outdir}/panalign_out", mode: 'copy'
 	
 	input:
-	path pangenome
+	path pangenome_path
 	tuple val(sample_id), path(read_file)
 	
 	output:
@@ -25,9 +25,9 @@ process PANALIGN {
 	
 	script:
 	"""	
-	zcat read_file[0] read_file[1] | \
-	(bowtie2 -q -x "${pangenome}" -U - --un-gz "${sample_id}_bt2_pangenome_unaligned.fastq.gz" \
-	-p $task.cpus --very-sensitive) 2>"${sample_id}_bt2.log" | \
+	zcat read_file[0] read_file[1] | \\
+	(bowtie2 -q -x ${pangenome_path}/${params.pangenome} -U - --un-gz "${sample_id}_bt2_pangenome_unaligned.fastq.gz" \\
+	-p $task.cpus --very-sensitive) 2>"${sample_id}_bt2.log" | \\
 	samtools view -bS - > "${sample_id}_bt2_pangenome_aligned.bam"; done
 		
 	"""
