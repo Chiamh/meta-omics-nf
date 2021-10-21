@@ -16,8 +16,8 @@ process PANALIGN {
 	tuple val(sample_id), path(reads_file)
 	
 	output:
-	tuple val(sample_id), path("${sample_id}.bt2_pangenome_aligned.bam"), emit: aligned
-	tuple val(sample_id), path("${sample_id}.bt2_pangenome_unaligned.fastq.gz"), emit: unaligned
+	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.bam"), emit: aligned
+	tuple val(sample_id), path("${sample_id}_bt2_pangenome_unaligned.fastq.gz"), emit: unaligned
 	tuple val(sample_id), path("${sample_id}_bt2.log"), emit: logs
 	
 	when:
