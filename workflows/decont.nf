@@ -166,7 +166,7 @@ include { DECONT_DNA } from '../modules/decont_dna.nf'
 
 workflow DECONT {
 
-if (params.process_rna}{
+if (params.process_rna){
     DECONT_RNA(params.star_index, params.ribokmers, ch_rna_input)
 }
 if (params.process_dna){
