@@ -13,18 +13,19 @@ process BRACKEN {
 	input:
 	path kraken2db
 	val(readlength)
-	tuple val(sample_id), path("${sample_id}.kraken2.tax")
+	tuple val(sample_id), path("${sample_id}_kraken2.tax")
 	
 	output:
-	tuple val(sample_id), path("${sample_id}.bracken.tax"), emit: results
+	tuple val(sample_id), path("${sample_id}_bracken.tax"), emit: results
+	tuple val(sample_id), path("${sample_id}_bracken.out"), emit: out
 
 	when:
 	!params.profilers_off && params.process_dna
 	
 	script:
 	"""	
-	bracken -d "${kraken2db}" -i "${sample_id}.kraken2.tax" \\
-	-o "${sample_id}.bracken.out" -w "${sample_id}.bracken.tax" -r "${readlength}" -l S
+	bracken -d "${kraken2db}" -i "${sample_id}_kraken2.tax" \\
+	-o "${sample_id}_bracken.out" -w "${sample_id}_bracken.tax" -r "${readlength}" -l S
 		
 	"""
 }
