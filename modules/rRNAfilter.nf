@@ -18,7 +18,7 @@ process RIBOFILTER {
 	
 	output:
 	tuple val(sample_id), path("${sample_id}*_{1,2}.fastq.gz"), emit: reads
-	tuple val(sample_id), path("*.rRNAfilter.log") , emit: logs
+	tuple val(sample_id), path("*_rRNAfilter.log") , emit: logs
 	
 	when:
 	!params.decont_off && params.process_rna
