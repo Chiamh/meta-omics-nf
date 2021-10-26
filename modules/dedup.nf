@@ -7,7 +7,7 @@ process DEDUP {
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy'
 	
 	input:
-	tuple val(sample_id), path(reads_file)
+	tuple val(sample_id), path(reads)
 	
 	output:
 	tuple val(sample_id), path("*.fastq.gz"), emit: reads
@@ -18,7 +18,7 @@ process DEDUP {
 	
 	script:
 	"""
-	clumpify.sh in=${reads_file[0]} in2=${reads_file[1]} \\
+	clumpify.sh in=${reads[0]} in2=${reads[1]} \\
 	out=${sample_id}_decont_1.fastq.gz out2=${sample_id}_decont_2.fastq.gz \\
 	dedupe=t \\
 	optical=f 2>${sample_id}_dedup.log

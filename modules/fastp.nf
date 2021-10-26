@@ -13,8 +13,8 @@ process FASTP {
 	tuple val(sample_id), path(reads_file)
 	
 	output:
-	tuple val(sample_id), path("${sample_id}_fastp_1.fastq.gz"), path("${sample_id}_fastp_2.fastq.gz"), emit: fastqreads
-	tuple val(sample_id), path("${sample_id}_unmapped_1.fastq.gz"), path("${sample_id}_unmapped_2.fastq.gz"), emit: microbereads
+	tuple val(sample_id), path("${sample_id}_fastp_{1,2}.fastq.gz"), emit: fastqreads
+	tuple val(sample_id), path("${sample_id}_unmapped_{1,2}.fastq.gz"), emit: microbereads
 	tuple path("${sample_id}.html"), path("${sample_id}.json") , emit: logs
 	
 	when:
