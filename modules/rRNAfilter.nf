@@ -14,7 +14,7 @@ process RIBOFILTER {
 	
 	input:
 	path ribokmers
-	tuple sample_id, path(reads_file)
+	tuple val(sample_id), path(reads_file)
 	
 	output:
 	tuple val(sample_id), path("*.fastq.gz"), emit: reads
