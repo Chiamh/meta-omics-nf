@@ -11,7 +11,7 @@ process DECONT_DNA {
 	tuple val(sample_id), path(reads_file)
 	
 	output:
-	tuple val(sample_id), path("*.fastq.gz"), emit: reads
+	tuple val(sample_id), path("${sample_id}*_{1,2}.fastq.gz"), emit: reads
 	tuple path("${sample_id}.html"), path("${sample_id}.json") , emit: logs
 	
 	when:

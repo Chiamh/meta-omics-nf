@@ -10,7 +10,7 @@ process DEDUP {
 	tuple val(sample_id), path(reads)
 	
 	output:
-	tuple val(sample_id), path("*.fastq.gz"), emit: reads
+	tuple val(sample_id), path("${sample_id}*_{1,2}.fastq.gz"), emit: reads
 	tuple val(sample_id), path("*.log"), emit: logs
 	
 	when:

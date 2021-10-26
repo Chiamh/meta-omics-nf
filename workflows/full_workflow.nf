@@ -203,15 +203,15 @@ include { DECONT_DNA } from '../modules/decont_dna.nf'
 workflow FULL {
     if ( params.process_rna ){
         FASTP(params.star_index, ch_rna_input)
-        RIBOFILTER(params.ribokmers, FASTP.out.microbereads.groupTuple())
-        DEDUP(RIBOFILTER.out.reads.groupTuple())
+        RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
+        DEDUP(RIBOFILTER.out.reads)
         
         if ( params.decont_off ) {
             ch_rna_decont = ch_rna_input
         } else if ( !params.decont_off && params.dedupe ){
-            ch_rna_decont = DEDUP.out.reads.groupTuple()
+            ch_rna_decont = DEDUP.out.reads
             } else if ( !params.decont_off && !params.dedupe ){
-            ch_rna_decont = RIBOFILTER.out.reads.groupTuple()
+            ch_rna_decont = RIBOFILTER.out.reads
     }
         KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
         PANALIGN(params.pangenome_path, ch_rna_decont)
@@ -224,7 +224,7 @@ workflow FULL {
         if ( params.decont_off ) {
             ch_dna_decont = ch_dna_input
         } else if ( !params.decont_off ) {
-            ch_dna_decont = DECONT_DNA.out.reads.groupTuple()
+            ch_dna_decont = DECONT_DNA.out.reads
         }
         
         KRAKEN2_DNA(params.kraken2db, ch_dna_decont)
