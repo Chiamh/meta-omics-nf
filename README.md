@@ -21,7 +21,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 4. Optional sequence de-duplication using bbmap (38.93) clumpify.sh
 5. Taxonomic classification of non-human reads using Kraken2 (2.1.2)
 6. Functional annotation of reads by mapping to a microbial gene catalog of choice using bowtie2 (2.4.4)
-7. Functional annotation of unmapped reads in the previous step, to a larger protein database e.g. [UHGP] (http://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/human-gut/v1.0/uhgp_catalogue/) or [Uniref90] (https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref90/) using diamond (2.0.12)
+7. Functional annotation of unmapped reads in the previous step, to a larger protein database e.g. [UHGP](http://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/human-gut/v1.0/uhgp_catalogue/) or [Uniref90](https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref90/) using diamond (2.0.12)
 8. Pathway annotation of mappable reads using EggNOG mapper **WIP, unimplemented**
 
 ## Quick Start
