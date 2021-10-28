@@ -37,17 +37,17 @@ This pipeline currently only accepts paired-end reads as inputs.
 	$ nextflow run ./meta-omics-nf/main.nf --help
 	```
 
-	> Add a custom config file which contains the paths to various pre-installed databases. Refer to the test.config file in this repo for an example. 
-	> Add a custom profile in the nextflow.config file, allowing you to specify the use of docker or singularity, and/or a task scheduler.  
+* Add a custom config file which contains the paths to various pre-installed databases. Refer to the test.config file in this repo for an example. 
+* Add a custom profile in the nextflow.config file, allowing you to specify the use of docker or singularity, and/or a task scheduler.  
 
 4. Run the pipeline
 	```sh
 	$ nextflow run ./meta-omics-nf/main.nf -profile your_profile --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	```
-	> You can specifiy multiple profiles separated by comma, e.g. -profile docker,sge.
-	> The taxonomic classification, nucleotide alignment and translated search modules can be quite memory intensive depending on the databases used
-	> Delete the work/ directory after running the pipeline to free up space taken up by intermediate files
-	> There are modular workflows to reduce the size of intermediate files produced by the pipeline. See the help message for more details
+* You can specifiy multiple profiles separated by comma, e.g. -profile docker,sge.
+* The taxonomic classification, nucleotide alignment and translated search modules can be quite memory intensive depending on the databases used
+* Delete the work/ directory after running the pipeline to free up space taken up by intermediate files
+* There are modular workflows to reduce the size of intermediate files produced by the pipeline. See the help message for more details
 	
 ## Contact
 
