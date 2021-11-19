@@ -205,7 +205,10 @@ workflow FULL {
     if ( params.process_rna ){
         FASTP(params.star_index, ch_rna_input)
         RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
-        DEDUP(RIBOFILTER.out.reads)
+        
+	if ( params.dedupe ){
+	DEDUP(RIBOFILTER.out.reads)
+	}
         
         if ( params.decont_off ) {
             ch_rna_decont = ch_rna_input
