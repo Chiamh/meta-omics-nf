@@ -1,15 +1,15 @@
-// Pangenome/gene catalog nucleotide alignment for metatranscriptomes
+// Pangenome/gene catalog nucleotide alignment for metagenomes (MGX)
 
 /*
 Requires a pre-built pangenome with a bowtie2 index
-This process will concatenate the metatranscriptomic R1 and R2 files before bowtie2 mapping to pangenome.
+This process will concatenate the metagenomic R1 and R2 files before bowtie2 mapping to pangenome.
 */
 
-process PANALIGN {
+process PANALIGN_DNA {
 	label "process_highmem"
 	label "error_retry"
 	tag "${sample_id}"
-	publishDir "${params.outdir}/panalign_out", mode: 'copy'
+	publishDir "${params.outdir}/MGX_panalign_out", mode: 'copy'
 	
 	input:
 	path pangenome_path
@@ -17,18 +17,21 @@ process PANALIGN {
 	
 	output:
 	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.bam"), emit: aligned
+	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned_filtered_cov.tsv"), emit: coverage
 	tuple val(sample_id), path("${sample_id}_bt2_pangenome_unaligned.fastq.gz"), emit: unaligned
 	tuple val(sample_id), path("${sample_id}_bt2.log"), emit: logs
 	
 	when:
-	!params.panalign_off && params.process_rna
+	!params.panalign_off && params.process_dna
 	
 	script:
-	"""	
+	"""
 	zcat ${reads_file[0]} ${reads_file[1]} | \\
 	(bowtie2 -q -x ${pangenome_path}/${params.pangenome} -U - --un-gz "${sample_id}_bt2_pangenome_unaligned.fastq.gz" \\
 	-p $task.cpus --very-sensitive) 2>"${sample_id}_bt2.log" | \\
 	samtools view -bS - > "${sample_id}_bt2_pangenome_aligned.bam"
-		
+
+	panalign_helper.sh "${sample_id}"
+	
 	"""
 }

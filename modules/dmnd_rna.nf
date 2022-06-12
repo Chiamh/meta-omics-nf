@@ -4,11 +4,11 @@
 Requires a pre-built diamond2 database. Can use uniref90 or similar. 
 */
 
-process DMND {
+process DMND_RNA {
 	label "process_highmem"
 	label "error_retry"
 	tag "${sample_id}"
-	publishDir "${params.outdir}/dmnd_out", mode: 'copy'
+	publishDir "${params.outdir}/MTX_dmnd_out", mode: 'copy'
 	
 	input:
 	path dmnddb

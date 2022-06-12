@@ -54,7 +54,12 @@ def helpMessage() {
       --kraken2db                   Path to the Kraken2 and Bracken databases
       --pangenome_path              Path to the folder with bowtie2 index for custom-built microbial pangenome/gene catalog
       --pangenome                   Name of the bowtie2 index for the pangenome/gene catalog e.g. IHSMGC
-      --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)  
+      --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)
+      --eggnog_db                   Path to folder containing the eggnog database
+      --eggnog_OG_annots            Path to a pre-built e5.og_annotations.tsv file, downloaded from http://eggnog5.embl.de/download/eggnog_5.0, sorted by EGGNOG ID--eggnog_OG_annots
+      --uniref90_fasta              Path to fasta file containing amino acid sequences from Uniref90
+      --uniref90_GO                 Path to two column .tsv file derived from https://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/idmapping/idmapping_selected.tab.gz
+      --pangenome_annots            Path to pre-computed eggnog annotations for pangenome
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
@@ -62,10 +67,10 @@ def helpMessage() {
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
-      --dedupe                      Run sequence deduplication with clumpify.sh [Default: true]
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]
+      --annotate_off                Skip functional annotation using Eggnog and Uniref90 [Default: false]
     Output arguments:
       --outdir                      The output directory where the results will be saved [Default: ./pipeline_results]
       --tracedir                    The directory where nextflow logs will be saved [Default: ./pipeline_results/pipeline_info]
@@ -143,11 +148,11 @@ if (!params.ribokmers && !params.decont_off && params.process_rna){
 //params.dna_reads = "$baseDir/data/raw_fastq/dna/*{1,2}.{fq.gz,fastq.gz}"
 
 if (params.process_rna){
-    Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkExists:true ).set{ ch_rna_input }
+    Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
 }
 
 if (params.process_dna){
-    Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkExists:true ).set{ ch_dna_input }
+    Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
 }
 
 /*

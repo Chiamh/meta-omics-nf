@@ -9,7 +9,7 @@ process RIBOFILTER {
 	tag "${sample_id}"
 	
 
-	publishDir { params.dedupe ? "$params.outdir/decont/RNA/rRNAfilter_temp_fastq" : "$params.outdir/decont/RNA" }, mode: 'copy', pattern: '*.fastq.gz'
+	publishDir { params.dedupe ? "$params.outdir/decont/RNA/rRNAfilter_temp_fastq" : "$params.outdir/decont/RNA" }, pattern: '*.fastq.gz'
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy', pattern: '*.log'
 	
 	input:

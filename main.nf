@@ -66,7 +66,13 @@ def helpMessage() {
       --kraken2db                   Path to the Kraken2 and Bracken databases
       --pangenome_path              Path to the folder with bowtie2 index for custom-built microbial pangenome/gene catalog
       --pangenome                   Name of the bowtie2 index for the pangenome/gene catalog e.g. IHSMGC
-      --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)  
+      --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)
+      --eggnog_db                   Path to folder containing the eggnog database
+      --eggnog_OG_annots            Path to a pre-built e5.og_annotations.tsv file, downloaded from http://eggnog5.embl.de/download/eggnog_5.0, sorted by EGGNOG ID
+      --uniref90_fasta              Path to fasta file containing amino acid sequences from Uniref90
+      --uniref90_GO                 Path to two column .tsv file derived from https://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/idmapping/idmapping_selected.tab.gz
+      --pangenome_annots            Path to pre-computed eggnog annotations for pangenome
+      --spike_in_path		    Path to file denoting genera/species to remove from metagenomes before functional profiling, because they are spike-ins
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
@@ -77,6 +83,8 @@ def helpMessage() {
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]
+      --rm_spikes                   Removes spike in sequences from metagenomes [Default: true]
+      --annotate_off                Skip functional annotation using Eggnog and Uniref90 [Default: false]
     Output arguments:
       --outdir                      The output directory where the results will be saved [Default: ./pipeline_results]
       --tracedir                    The directory where nextflow logs will be saved [Default: ./pipeline_results/pipeline_info]
@@ -131,7 +139,3 @@ workflow classify {
     
     PROFILE ()
 }
-
-
-
-
