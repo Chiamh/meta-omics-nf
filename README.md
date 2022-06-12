@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Chiamh/meta-omics-nf is a bioinformatics pipeline that takes raw metagenomic and/or metatranscriptomic reads and annotates them at the taxonomic and functional levels.
+Chiamh/meta-omics-nf is a bioinformatics pipeline that takes raw metagenomic **(MGX)** and/or metatranscriptomic **(MTX)** reads and annotates them at the taxonomic and functional levels.
 
 The pipeline is built using [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) , a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. 
 It uses Docker containers (also compatible with Singularity) for ease of installation and computational reproducibility. 
@@ -70,6 +70,9 @@ This pipeline currently only accepts paired-end reads as inputs.
 **Caveat: Read counts (paired-end) for some reports are not directly comparable with read counts (unpaired) for other reports. This is necessary because kraken2 is run in paired-end mode, whereas functional annotations take "unpaired" inputs.**
 
 Why is it preferable to perform functional annotations using unpaired despite paired-end data? [Read this.](https://github.com/biobakery/humann#humann-30-and-paired-end-sequencing-data)
+
+* decont/DNA (for metagenomes) or decont/RNA (for metatranscriptomes)
+    * These folders contain decontaminated reads in fastq.gz format. Decontamination means adapter removal, host read removal, rRNA removal (for MTX) and optional de-duplication (for MTX)
 
 * kraken2_out/DNA
     * \*kraken2.out : Kraken2 [raw output](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#standard-kraken-output-format) with taxonomic classification for each read.
