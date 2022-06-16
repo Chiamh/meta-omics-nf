@@ -22,7 +22,7 @@ process ANNOT_DMND_DNA {
 	"""
 	annot_dmnd_helper_1.sh "${sample_id}" "${dmnd_results}" "${uniref90_fasta}"
 	
-	emapper.py --cpu ${task.cpus} -i "${sample_id}"_chosen.fa --data_dir "${eggnog_db}" -m diamond --go_evidence all --output "${sample_id}" --output_dir ./ --dbmem
+	emapper.py --cpu ${task.cpus} -i "${sample_id}"_chosen.fa --data_dir "${eggnog_db}" -m diamond --go_evidence all --output "${sample_id}" --output_dir ./
 
 	annot_dmnd_helper_2.sh "${sample_id}"
 	
