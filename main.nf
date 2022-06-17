@@ -111,7 +111,7 @@ if (params.help){
 include { FULL } from './workflows/full_workflow.nf'
 include { DECONT } from './workflows/decont.nf'
 include { PROFILE } from './workflows/classify.nf'
-include { CONCAT } from './workflows/concatenate.nf'
+include { CONCATENATE } from './workflows/concatenate.nf'
 
 /*
 ========================================================================================
