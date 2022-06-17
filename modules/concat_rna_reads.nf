@@ -7,8 +7,8 @@ process CONCAT_RNA {
 	publishDir "${params.outdir}/RNA_merged", mode: 'move'
 	
 	input:
-	path readsdir
-	val sample_id
+	tuple val(sample_id), path(read1_files)
+	tuple val(sample_id), path(read2_files)
 	
 	output:
 	path("${sample_id}_merged_{1,2}.fastq.gz")
@@ -17,9 +17,9 @@ process CONCAT_RNA {
 	"""
 	echo concatenating reads from "${sample_id}"
 	
-	cat ${readsdir}/${sample_id}/*_1.fq.gz > "${sample_id}_merged_1.fastq.gz"
+	cat "${sample_id}"*_1.fq.gz > "${sample_id}_merged_1.fastq.gz"
 	
-	cat ${readsdir}/${sample_id}/*_2.fq.gz > "${sample_id}_merged_2.fastq.gz"
+	cat "${sample_id}"*_2.fq.gz > "${sample_id}_merged_2.fastq.gz"
 	
 	echo finished processing "${sample_id}"
 	

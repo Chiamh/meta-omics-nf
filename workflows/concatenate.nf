@@ -9,17 +9,20 @@
 */
 
 if (params.process_rna){
-    libid_rna = Channel.fromPath( [params.rna_reads + '/**MHS[0-9]*'], checkIfExists:true ).map{ file ->
-	libid = file.getParent().getName(); return libid //the parent dir is likely the library ID
-	}
-	.unique()
+    rna_r1 = Channel.fromPath( [params.rna_reads + '/**_1.fq.gz'], checkIfExists:true ).map{
+								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
+								
+	rna_r2 = Channel.fromPath( [params.rna_reads + '/**_2.fq.gz'], checkIfExists:true ).map{
+								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
 }
 
 if (params.process_dna){
-    libid_dna = Channel.fromPath( [params.dna_reads + '/**MHS[0-9]*'], checkIfExists:true ).map{ file ->
-	libid = file.getParent().getName(); return libid //the parent dir is likely the library ID
-	}
-	.unique()
+    dna_r1 = Channel.fromPath( [params.dna_reads + '/**_1.fq.gz'], checkIfExists:true ).map{
+								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
+	
+	dna_r2 = Channel.fromPath( [params.dna_reads + '/**_2.fq.gz'], checkIfExists:true ).map{
+								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
+	
 }
 
 /*
@@ -40,10 +43,10 @@ include { CONCAT_DNA } from '../modules/concat_dna_reads.nf'
 workflow CONCATENATE {
 
 if (params.process_rna){
-    CONCAT_RNA(params.rna_reads, libid_rna)
+    CONCAT_RNA(rna_r1, rna_r2)
 }
 if (params.process_dna){
-    CONCAT_DNA(params.dna_reads, libid_dna)
+    CONCAT_DNA(dna_r1, dna_r2)
 }
 
 }
