@@ -37,7 +37,7 @@ include { CONCAT_DNA } from '../modules/concat_dna_reads.nf'
 ========================================================================================
 */
 
-workflow CONCAT {
+workflow CONCATENATE {
 
 if (params.process_rna){
     CONCAT_RNA(params.rna_reads, libid_rna)

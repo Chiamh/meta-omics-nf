@@ -140,9 +140,9 @@ workflow classify {
     
     PROFILE ()
 }
-// Use the concat workflow to join fastq files across different lanes by libid. Specify path to raw reads with --rna_reads and/or --dna_reads
-workflow concat {
+// Use the concatenate workflow to join fastq files across different lanes by libid. Specify path to raw reads with --rna_reads and/or --dna_reads
+workflow concatenate {
 
-    CONCAT ()
+    CONCATENATE ()
 }
 
