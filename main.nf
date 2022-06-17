@@ -111,6 +111,7 @@ if (params.help){
 include { FULL } from './workflows/full_workflow.nf'
 include { DECONT } from './workflows/decont.nf'
 include { PROFILE } from './workflows/classify.nf'
+include { CONCAT } from './workflows/concatenate.nf'
 
 /*
 ========================================================================================
@@ -139,3 +140,9 @@ workflow classify {
     
     PROFILE ()
 }
+// Use the concat workflow to join fastq files across different lanes by libid. Specify path to raw reads with --rna_reads and/or --dna_reads
+workflow concat {
+
+    CONCAT ()
+}
+
