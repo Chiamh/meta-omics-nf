@@ -4,7 +4,7 @@
 process CONCAT_RNA {
 	label "process_small"
 	tag "${sample_id}"
-	publishDir "${params.outdir}/RNA_merged", mode: 'move'
+	publishDir "${params.outdir}/RNA_merged"
 	
 	input:
 	tuple val(sample_id), path(read1_files)
