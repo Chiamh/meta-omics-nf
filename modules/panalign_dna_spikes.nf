@@ -35,9 +35,6 @@ process PANALIGN_DNA_SPIKES {
 
 	panalign_spikes_helper.sh "${sample_id}" "${k2_out}" "${spike_in_path}"
 
-	rm "${sample_id}_bt2_pangenome_aligned_unfiltered.bam"
-
-	rm "${sample_id}_bt2_pangenome_unaligned_unfiltered.fastq.gz"
 		
 	"""
 }
