@@ -9,18 +9,18 @@
 */
 
 if (params.process_rna){
-    rna_r1 = Channel.fromPath( [params.rna_reads + '/**_1.fq.gz'], checkIfExists:true ).map{
+    rna_r1 = Channel.fromPath( [params.rna_reads + '/**{R,.,_}1*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
 								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
 								
-	rna_r2 = Channel.fromPath( [params.rna_reads + '/**_2.fq.gz'], checkIfExists:true ).map{
+	rna_r2 = Channel.fromPath( [params.rna_reads + '/**{R,.,_}2*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
 								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
 }
 
 if (params.process_dna){
-    dna_r1 = Channel.fromPath( [params.dna_reads + '/**_1.fq.gz'], checkIfExists:true ).map{
+    dna_r1 = Channel.fromPath( [params.dna_reads + '/**{R,.,_}1*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
 								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
 	
-	dna_r2 = Channel.fromPath( [params.dna_reads + '/**_2.fq.gz'], checkIfExists:true ).map{
+	dna_r2 = Channel.fromPath( [params.dna_reads + '/**{R,.,_}2*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
 								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
 	
 }
