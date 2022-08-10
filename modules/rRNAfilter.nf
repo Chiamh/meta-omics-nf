@@ -5,7 +5,6 @@
 
 process RIBOFILTER {
 	label "process_medium"
-	label "error_retry"
 	tag "${sample_id}"
 	
 

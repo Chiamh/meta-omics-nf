@@ -6,7 +6,6 @@ params.kraken2db is the path to a built Kraken2 database which also contains the
 
 process BRACKEN {
 	label "process_small"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/kraken2_out/DNA", mode: 'copy'
 	

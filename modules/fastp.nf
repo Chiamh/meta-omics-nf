@@ -2,7 +2,6 @@
 
 process FASTP {
 	label "process_high"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/decont/RNA/fastp_tmp_fastq", mode: 'copy', pattern: '*.fastq.gz'
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy', pattern: '*.{json,html}'

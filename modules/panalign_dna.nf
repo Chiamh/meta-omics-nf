@@ -7,7 +7,6 @@ This process will concatenate the metagenomic R1 and R2 files before bowtie2 map
 
 process PANALIGN_DNA {
 	label "process_highmem"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/MGX_panalign_out", mode: 'copy'
 	

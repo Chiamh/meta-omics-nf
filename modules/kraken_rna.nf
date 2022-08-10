@@ -6,7 +6,6 @@ It is encouraged for users to run kraken2 with 10-20 threads.
 
 process KRAKEN2_RNA {
 	label "process_high"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/kraken2_out/RNA", mode: 'copy'
 	

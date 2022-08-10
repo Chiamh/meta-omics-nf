@@ -20,7 +20,7 @@ process ANNOT_DMND_DNA {
 	
 	script:
 	"""
-	annot_dmnd_helper_1.sh "${sample_id}" "${dmnd_results}" "${uniref90_fasta}"
+	annot_dmnd_helper_1.sh "${sample_id}" "${uniref90_fasta}"
 	
 	emapper.py --cpu ${task.cpus} -i "${sample_id}"_chosen.fa --data_dir "${eggnog_db}" -m diamond --go_evidence all --output "${sample_id}" --output_dir ./
 
@@ -28,7 +28,7 @@ process ANNOT_DMND_DNA {
 	
 	extract_OG.sh "${sample_id}"_eggnog_index "${sample_id}"_eggnog_OGs "${sample_id}"
 	
-	annot_dmnd_helper_3.sh "${sample_id}" "${eggnog_OG_annots}" "${dmnd_results}" "${uniref90_GO}"
+	annot_dmnd_helper_3.sh "${sample_id}" "${eggnog_OG_annots}" "${uniref90_GO}"
 	
 	"""
 

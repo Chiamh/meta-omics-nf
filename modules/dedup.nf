@@ -2,7 +2,6 @@
 
 process DEDUP {
 	label "process_medium"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy'
 	

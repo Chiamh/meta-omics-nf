@@ -21,9 +21,8 @@ process TRF_TAXA_DNA {
 	script:
 
 	"""
-	samtools view -F 4 "${panalign_bam}" | cut -f 1,3 | sort -k1,1 > "${sample_id}"_read_to_pangene.tsv
 	
-	transfer_taxa_helper.sh "${sample_id}" "${unaligned_fa}" "${k2_out}" "${pangenome_annots}" "${dmnd_aligned_results}"
+	transfer_taxa_helper.sh "${sample_id}" "${pangenome_annots}"
 
 	"""
 }

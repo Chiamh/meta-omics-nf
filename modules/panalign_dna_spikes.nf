@@ -7,7 +7,6 @@ This process will concatenate the metagenomic R1 and R2 files before bowtie2 map
 
 process PANALIGN_DNA_SPIKES {
 	label "process_highmem"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/MGX_panalign_out", mode: 'copy'
 	
@@ -33,7 +32,7 @@ process PANALIGN_DNA_SPIKES {
 	-p $task.cpus --very-sensitive) 2>"${sample_id}_bt2.log" | \\
 	samtools view -bS - > "${sample_id}_bt2_pangenome_aligned_unfiltered.bam"
 
-	panalign_spikes_helper.sh "${sample_id}" "${k2_out}" "${spike_in_path}"
+	panalign_spikes_helper.sh "${sample_id}" "${spike_in_path}"
 
 		
 	"""

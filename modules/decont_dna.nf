@@ -2,7 +2,6 @@
 
 process DECONT_DNA {
 	label "process_high"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/decont/DNA", mode: 'copy'
 	

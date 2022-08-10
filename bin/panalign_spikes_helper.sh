@@ -3,10 +3,9 @@ set -e
 set -u
 
 sample_id=${1}
-k2_out=${2}
-spike_in_path=${3}
+spike_in_path=${2}
 
-cut -f2,3 ${k2_out} | grep -Ef ${spike_in_path} - | cut -f1 > "${sample_id}"_spike_reads
+cut -f2,3 "${sample_id}"_kraken2.out | grep -Ef ${spike_in_path} - | cut -f1 > "${sample_id}"_spike_reads
 
 filterbyname.sh in="${sample_id}"_bt2_pangenome_aligned_unfiltered.bam out="${sample_id}"_bt2_pangenome_aligned.bam names="${sample_id}"_spike_reads include=false
 

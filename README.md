@@ -60,10 +60,11 @@ This pipeline currently only accepts paired-end reads as inputs.
 * The taxonomic classification, nucleotide alignment, translated search and annotation modules can be quite memory intensive depending on the databases used
 * Delete the work/ directory after running the pipeline to free up space taken up by intermediate files
 * There are modular workflows (decontaminate and classify) to reduce the size of intermediate files produced by the pipeline. See the help message for more details
+* You have the flexibility to turn off DNA spike in removal and/or the eggNOG annotation modules. See the help message for more details
 	```sh
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry decontaminate --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	
-	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry decontaminate --rna_reads /path/to/DECONTAMINATED_metatranscriptomes --dna_reads /path/to/DECONTAMINATED_metagenomes --outdir /path/to/results
+	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry classify --rna_reads /path/to/DECONTAMINATED_metatranscriptomes --dna_reads /path/to/DECONTAMINATED_metagenomes --outdir /path/to/results
 	```
 ## Output files (bolded items are noteworthy for downstream analyses)
 
@@ -96,11 +97,16 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 	
 * MGX_annotations/ (for metagenomes) or MTX_annotations/ (for metatranscriptomes)
 **Note: Besides reads which did not align to pangene catalogs or Uniref90 databases, all annotations are over features with >= 50% read coverage.**
-    * \*decont.emapper.annotations : Tab separated output from [eggnog mapper 2.1.6](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.7#annotations-file)
+    * \*decont.emapper.annotations : Tab separated output from eggnog mapper 2.1.6.
 	* **\*all_aligned_taxonomy.tsv** : Tab separated output. Column 1: Pangene ID; Column 2: Read ID; Column 3: Kraken2 taxonomic classification; Column 4: Uniref90 ID. 
 	* **\*unaligned_taxonomy.tsv** : Tab separated output. Column 1: Read ID; Column 2: Kraken2 taxonomic classification. This details the taxonomic classifications for reads which did not align to pangene catalogs or Uniref90 databases
 	* **\*panalign_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for pangenes with >= 50% read coverage. Columns are in order: pangene length, percent_cov, unpaired_read_count, pangene_desc, uniref90_ID, uniref90_desc, uniref90_GO, emapper_max_annot_OG, emapper_OG, [emapper_max_annot_lvl](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.7#orthologous-groups-fields), [eggnog_cat](http://clovr.org/docs/clusters-of-orthologous-groups-cogs/), eggnog_GO, eggnog_desc
-	* **\*transl-seach_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for Uniref90 clusters (with no pangene assignment) with >= 50% read coverage. Columns are in order: uniref90_ID, percent_cov, AA_length, unpaired_read_count, uniref90_desc, emapper_max_annot_og, emapper_OG, emapper_max_annot_lvl, eggnog_cat, eggnog_GO, eggnog_desc, uniref90_GO
+	* **\*transl-search_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for Uniref90 clusters (with no pangene assignment) with >= 50% read coverage. Columns are in order: uniref90_ID, percent_cov, AA_length, unpaired_read_count, uniref90_desc, emapper_max_annot_OG, emapper_OG, emapper_max_annot_lvl, eggnog_cat, eggnog_GO, eggnog_desc, uniref90_GO
+
+## Updates
+
+Aug 2022: Implemented an ignore-finish strategy rather than a retry-finish strategy. Tuned helper scripts. Updated readme file. Fixed typos. 
+
 	
 ## Contact
 

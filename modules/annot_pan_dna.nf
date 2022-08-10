@@ -19,7 +19,7 @@ process ANNOT_PAN_DNA {
 
 	"""
 	
-	annot_pan_helper.sh "${sample_id}" "${panalign_results}" "${pangenome_annots}"
+	annot_pan_helper.sh "${sample_id}" "${pangenome_annots}"
 	
 	"""
 }

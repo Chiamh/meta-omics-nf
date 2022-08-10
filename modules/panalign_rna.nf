@@ -7,7 +7,6 @@ This process will concatenate the metatranscriptomic R1 and R2 files before bowt
 
 process PANALIGN_RNA {
 	label "process_highmem"
-	label "error_retry"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/MTX_panalign_out", mode: 'copy'
 	
