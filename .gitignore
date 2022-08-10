@@ -3,5 +3,6 @@ work/
 data/
 pipeline*
 .DS_Store
+.Rhistory
 testing/
 testing*
