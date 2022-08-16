@@ -59,7 +59,8 @@ This pipeline currently only accepts paired-end reads as inputs.
 * You can specifiy multiple profiles separated by comma, e.g. -profile docker,sge.
 * The taxonomic classification, nucleotide alignment, translated search and annotation modules can be quite memory intensive depending on the databases used
 * Delete the work/ directory after running the pipeline to free up space taken up by intermediate files
-* There are modular workflows (decontaminate and classify) to reduce the size of intermediate files produced by the pipeline. See the help message for more details
+* There are modular workflows (decontaminate and classify) to reduce the size of intermediate files produced by the pipeline. See the help message for more details.
+* There is a concatenate workflow (-entry concatenate) to merge fastq.gz files across lanes for the same sample ID.
 * You have the flexibility to turn off DNA spike in removal and/or the eggNOG annotation modules. See the help message for more details
 	```sh
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry decontaminate --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
@@ -105,7 +106,8 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 
 ## Updates
 
-Aug 2022: Implemented an ignore-finish strategy rather than a retry-finish strategy. Tuned helper scripts. Updated readme file. Fixed typos. 
+* There is now a "concatenate" subworkflow to merge fastq.gz files across different lanes for the same sample ID.
+* Fixed code to not have the same variable name appear more than once in the input block for any process. 
 
 	
 ## Contact

@@ -7,8 +7,7 @@ process CONCAT_DNA {
 	publishDir "${params.outdir}/DNA_merged"
 	
 	input:
-	tuple val(sample_id), path(read1_files)
-	tuple val(sample_id), path(read2_files)
+	tuple val(sample_id), path(reads)
 	
 	output:
 	path("${sample_id}_merged_{1,2}.fastq.gz")

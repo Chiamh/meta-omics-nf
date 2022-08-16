@@ -13,8 +13,7 @@ process PANALIGN_DNA_SPIKES {
 	input:
 	path pangenome_path
 	path spike_in_path
-	tuple val(sample_id), path(reads_file)
-	tuple val(sample_id), path(k2_out)
+	tuple val(sample_id), path(reads_file), path(k2_out) 
 	
 	output:
 	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.bam"), emit: aligned
@@ -27,7 +26,7 @@ process PANALIGN_DNA_SPIKES {
 	
 	script:
 	"""
-	zcat ${reads_file[0]} ${reads_file[1]} | \\
+	zcat "${reads_file[0]}" "${reads_file[1]}" | \\
 	(bowtie2 -q -x ${pangenome_path}/${params.pangenome} -U - --un-gz "${sample_id}_bt2_pangenome_unaligned_unfiltered.fastq.gz" \\
 	-p $task.cpus --very-sensitive) 2>"${sample_id}_bt2.log" | \\
 	samtools view -bS - > "${sample_id}_bt2_pangenome_aligned_unfiltered.bam"

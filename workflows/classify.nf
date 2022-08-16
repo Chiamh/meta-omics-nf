@@ -238,23 +238,31 @@ if (params.process_rna){
    DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned)
    ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_RNA.out.aligned)
    ANNOT_PAN_RNA(params.pangenome_annots, PANALIGN_RNA.out.coverage)
-   TRF_TAXA_RNA(params.pangenome_annots, KRAKEN2_RNA.out.k2out, PANALIGN_RNA.out.aligned, DMND_RNA.out.aligned, DMND_RNA.out.unaligned)
+
+   ch_trf_taxa_rna_in=KRAKEN2_RNA.out.k2out.join(PANALIGN_RNA.out.aligned).join(DMND_RNA.out.aligned).join(DMND_RNA.out.unaligned)
+   TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
 }
 if (params.process_dna){
    KRAKEN2_DNA(params.kraken2db, ch_dna_input)
    BRACKEN(params.kraken2db, params.readlength, KRAKEN2_DNA.out.k2tax)
    if ( params.rm_spikes ){
-   PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_dna_input, KRAKEN2_DNA.out.k2out)
+
+   ch_panalign_dna_in=ch_dna_input.join(KRAKEN2_DNA.out.k2out)
+   PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
    DMND_DNA(params.dmnddb, PANALIGN_DNA_SPIKES.out.unaligned)
    ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
    ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA_SPIKES.out.coverage)
-   TRF_TAXA_DNA(params.pangenome_annots, KRAKEN2_DNA.out.k2out, PANALIGN_DNA_SPIKES.out.aligned, DMND_DNA.out.aligned, DMND_DNA.out.unaligned)
+
+   ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA_SPIKES.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
+   TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
    } else if ( !params.rm_spikes ){
    PANALIGN_DNA(params.pangenome_path, ch_dna_input)
    DMND_DNA(params.dmnddb, PANALIGN_DNA.out.unaligned)
    ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
    ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA.out.coverage)
-   TRF_TAXA_DNA(params.pangenome_annots, KRAKEN2_DNA.out.k2out, PANALIGN_DNA.out.aligned, DMND_DNA.out.aligned, DMND_DNA.out.unaligned)
+
+   ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
+   TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
    }
 }
 }
