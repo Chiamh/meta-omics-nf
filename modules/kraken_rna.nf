@@ -17,6 +17,7 @@ process KRAKEN2_RNA {
 	tuple val(sample_id), path("${sample_id}_kraken2.tax"), emit: k2tax
 	tuple val(sample_id), path("${sample_id}_kraken2.out"), emit: k2out
 	tuple val(sample_id), path("${sample_id}_k2.s.tsv"), emit: speciesreport
+	tuple val(sample_id), path("${sample_id}_kraken2_minimizer.tax"), emit: k2mintax
 	
 	when:
 	!params.profilers_off && params.process_rna
@@ -24,7 +25,7 @@ process KRAKEN2_RNA {
 	script:
 	"""
 	kraken2 --use-names --threads ${task.cpus} --db "${kraken2db}" \\
-	--report "${sample_id}_kraken2.tax" --output "${sample_id}_kraken2.out" \\
+	--report "${sample_id}_kraken2_minimizer.tax" --report-minimizer-data --output "${sample_id}_kraken2.out" \\
 	--gzip-compressed --paired ${reads_file[0]} ${reads_file[1]}
 	
 	k2_helper.sh "${sample_id}"

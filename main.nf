@@ -145,4 +145,3 @@ workflow concatenate {
 
     CONCATENATE ()
 }
-

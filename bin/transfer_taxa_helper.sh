@@ -19,6 +19,10 @@ join -a 2 -1 1 -2 1 -e '-' -o auto -t $'\t' "${sample_id}"_k2_read_sorted <(cut 
 
 cat "${sample_id}"_pangene_taxonomy.tsv "${sample_id}"_transl_search_taxonomy.tsv > "${sample_id}"_all_aligned_taxonomy.tsv
 
+sed -i "s/ \t/\t/" "${sample_id}"_all_aligned_taxonomy.tsv
+
+cut -f 1,3,4 "${sample_id}"_all_aligned_taxonomy.tsv | sed 's/ /_/g' |sort | uniq -c | sed 's/^ *//g' | sed 's/ /\t/g' > "${sample_id}"_all_aligned_taxonomy_summary.tsv
+
 join -a 2 -1 1 -2 1 -e '-' -o auto -t $'\t' "${sample_id}"_k2_read_sorted "${sample_id}"_unannotated_readnames > "${sample_id}"_unaligned_taxonomy.tsv
 
 #remove temp files

@@ -11,6 +11,7 @@ process TRF_TAXA_DNA {
 	output:
 	tuple val(sample_id), path("${sample_id}_all_aligned_taxonomy.tsv"), emit: aligned_taxa
 	tuple val(sample_id), path("${sample_id}_unaligned_taxonomy.tsv"), emit: unaligned_taxa
+	tuple val(sample_id), path("${sample_id}_all_aligned_taxonomy_summary.tsv"), emit: aligned_summary
 	
 	when:
 	!params.annotate_off

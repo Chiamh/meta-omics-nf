@@ -79,17 +79,20 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 * kraken2_out/DNA
     * \*kraken2.out : Kraken2 [raw output](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#standard-kraken-output-format) with taxonomic classification for each read.
 	* \*kraken2.tax : Kraken2 [report](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#sample-report-output-format)
+	* \*kraken2_minimizer.tax : Kraken2 [report](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#distinct-minimizer-count-information) with distinct minimizer count information.
 	* \*bracken.tax : Bracken report file with a simlar format to the Kraken2 report
-	* **\*bracken.out** : Bracken output, tab separated with taxonomic classifications, read counts (paired-end) and abundance estimations. 
+	* **\*bracken.out** : Bracken output, tab separated with taxonomic classifications, read counts (paired-end) and abundance estimations.
+	* **\*k2.s.tsv** : Simplified species level Kraken2 report, tab separated. Column 1: relative abundance; Column 2: paired read counts rooted at this taxon; Column 3: Number of minimizers in read data associated with this taxon; Column 4: An estimate of the number of distinct minimizers in read data associated with this taxon; Column 5: taxonomic classification at species level or unclassified. **Note: reads classified at genus level and above are not included in this report.**
 
 * kraken2_out/RNA
     * \*kraken2.out : Kraken2 [raw output](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#standard-kraken-output-format) with taxonomic classification for each read.
 	* \*kraken2.tax : Kraken2 [report](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#sample-report-output-format)
-	* **\*k2.s.tsv** : Simplified Kraken2 report, tab separated. Column 1: relative abundance; Column 2: read counts (paired-end); Column 2: taxonomic classification at species level or unclassified. **Note: reads classified at genus level and above are not included in this report.**
+	* \*kraken2_minimizer.tax : Kraken2 [report](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#distinct-minimizer-count-information) with distinct minimizer count information.
+	* **\*k2.s.tsv** : Simplified species level Kraken2 report, tab separated. Column 1: relative abundance; Column 2: paired read counts rooted at this taxon; Column 3: Number of minimizers in read data associated with this taxon; Column 4: An estimate of the number of distinct minimizers in read data associated with this taxon; Column 5: taxonomic classification at species level or unclassified. **Note: reads classified at genus level and above are not included in this report.**
 	
 * MGX_panalign_out/ (for metagenomes) or MTX_panalign_out/ (for metatranscriptomes)
     * \*bt2_pangenome_aligned.bam : BAM file after alignment of reads (unpaired) to pangene catalog.
-	* \*bt2_pangenome_aligned_filtered_cov.tsv : Tab separated file containing read coverage across pangenes. Only pangenes with >= 50% coverage are reported here.
+	* \*bt2_pangenome_aligned_filtered_cov.tsv : Tab separated file containing read coverage across pangenes. **Only pangenes with >= 50% coverage are reported here.**
 	* \*bt2_pangenome_unaligned.fastq.gz : All reads that did not align to the pangene catalog.
 
 * MGX_dmnd_out/ (for metagenomes) or MTX_panalign_out/ (for metatranscriptomes)
@@ -97,17 +100,20 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 	* \*uniref90_unaligned.fa : All reads that did not align to the Uniref90 database (and also by consequence, the pangene catalog)
 	
 * MGX_annotations/ (for metagenomes) or MTX_annotations/ (for metatranscriptomes)
-**Note: Besides reads which did not align to pangene catalogs or Uniref90 databases, all annotations are over features with >= 50% read coverage.**
+**Note: Apart from reads which did not align to pangene catalogs or Uniref90 databases, all annotations are over features with >= 50% read coverage.**
     * \*decont.emapper.annotations : Tab separated output from eggnog mapper 2.1.6.
-	* **\*all_aligned_taxonomy.tsv** : Tab separated output. Column 1: Pangene ID; Column 2: Read ID; Column 3: Kraken2 taxonomic classification; Column 4: Uniref90 ID. 
+	* **\*all_aligned_taxonomy.tsv** : Tab separated output. Column 1: Pangene ID; Column 2: Read ID; Column 3: Kraken2 taxonomic classification; Column 4: Uniref90 ID.
+	* **\*all_aligned_taxonomy_summary.tsv** : Tab separated output summarizing read counts per kraken2 taxon per gene feature. Column 1: Number of unpaired reads; Column 2: Pangene ID; Column 3: Kraken2 classification; Column 4: Uniref90 ID.
 	* **\*unaligned_taxonomy.tsv** : Tab separated output. Column 1: Read ID; Column 2: Kraken2 taxonomic classification. This details the taxonomic classifications for reads which did not align to pangene catalogs or Uniref90 databases
-	* **\*panalign_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for pangenes with >= 50% read coverage. Columns are in order: pangene length, percent_cov, unpaired_read_count, pangene_desc, uniref90_ID, uniref90_desc, uniref90_GO, emapper_max_annot_OG, emapper_OG, [emapper_max_annot_lvl](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.7#orthologous-groups-fields), [eggnog_cat](http://clovr.org/docs/clusters-of-orthologous-groups-cogs/), eggnog_GO, eggnog_desc
+	* **\*panalign_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for pangenes with >= 50% read coverage. Columns are in order: pangene length, percent_cov, unpaired_read_count, pangene_desc, uniref90_ID, uniref90_desc, uniref90_GO, emapper_max_annot_OG, emapper_OG, [emapper_max_annot_lvl](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.10#user-content-Orthologous_Groups_fields), [eggnog_cat](http://clovr.org/docs/clusters-of-orthologous-groups-cogs/), eggnog_GO, eggnog_desc
 	* **\*transl-search_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for Uniref90 clusters (with no pangene assignment) with >= 50% read coverage. Columns are in order: uniref90_ID, percent_cov, AA_length, unpaired_read_count, uniref90_desc, emapper_max_annot_OG, emapper_OG, emapper_max_annot_lvl, eggnog_cat, eggnog_GO, eggnog_desc, uniref90_GO
 
 ## Updates
 
 * There is now a "concatenate" subworkflow to merge fastq.gz files across different lanes for the same sample ID.
 * Fixed code to not have the same variable name appear more than once in the input block for any process. 
+* Add distinct minimizer information to kraken2 reports for false positive filtering. (Mar 2023)
+* Add taxonomy summary reports (Mar 2023)
 
 	
 ## Contact
