@@ -9,12 +9,12 @@
 */
 
 if (params.process_rna){
-    rna_reads = Channel.fromPath( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
+    rna_reads_to_concat = Channel.fromPath( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
 								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)
 }
 
 if (params.process_dna){
-    dna_reads = Channel.fromPath( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
+    dna_reads_to_concat = Channel.fromPath( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).map{
 								file -> tuple( file.getParent().getName(), file )}.groupTuple(sort:true)	
 }
 
@@ -36,10 +36,10 @@ include { CONCAT_DNA } from '../modules/concat_dna_reads.nf'
 workflow CONCATENATE {
 
 if (params.process_rna){
-    CONCAT_RNA(rna_reads)
+    CONCAT_RNA(rna_reads_to_concat)
 }
 if (params.process_dna){
-    CONCAT_DNA(dna_reads)
+    CONCAT_DNA(dna_reads_to_concat)
 }
 
 }
