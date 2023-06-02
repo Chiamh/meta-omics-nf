@@ -20,7 +20,7 @@ process RIBOFILTER {
 	tuple val(sample_id), path("*_rRNAfilter.log") , emit: logs
 	
 	when:
-	!params.decont_off && params.process_rna
+	!params.decont_off && params.process_rna && params.remove_rRNA
 	
 	script:
 	if (params.dedupe) {

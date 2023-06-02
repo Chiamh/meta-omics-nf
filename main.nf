@@ -80,6 +80,8 @@ def helpMessage() {
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
+	  --dedupe						Perform de-duplication using clumpify.sh for RNA reads [Default: true]
+	  --remove_rRNA					Perform computational rRNA removal [Default: true]
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]

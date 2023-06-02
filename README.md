@@ -48,8 +48,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 4. Make sure all helper scripts in meta-omics-nf/bin have execute permissions
 
 	```sh
-	$ cd bin/
-	$ chmod +x *
+	$ chmod +x ./meta-omics-nf/bin/*
 	```
 
 5. Run the pipeline

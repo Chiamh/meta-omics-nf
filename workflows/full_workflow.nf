@@ -68,6 +68,8 @@ def helpMessage() {
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
+	  --dedupe						Perform de-duplication using clumpify.sh for RNA reads [Default: true]
+	  --remove_rRNA					Perform computational rRNA removal [Default: true]
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]
@@ -132,7 +134,7 @@ if (!params.star_index && !params.decont_off && params.process_rna){
     exit 0
 }
 
-if (!params.ribokmers && !params.decont_off && params.process_rna){
+if (!params.ribokmers && !params.decont_off && params.process_rna && params.remove_rRNA){
     helpMessage()
     log.info"""
     [Error] --ribokmers is required for removal of rRNA reads (decontamination steps)
@@ -269,19 +271,27 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 workflow FULL {
     if ( params.process_rna ){
         FASTP(params.star_index, ch_rna_input)
-        RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
+		
+	if ( !params.decont_off && params.process_rna && params.remove_rRNA ){
+		RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
+	}
 	
-	if ( params.dedupe ){
+	if ( params.remove_rRNA && params.dedupe ){
         DEDUP(RIBOFILTER.out.reads)
+	} else if ( !params.remove_rRNA && params.dedupe ){
+		DEDUP(FASTP.out.microbereads)
 	}
         
-        if ( params.decont_off ) {
+        if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
             ch_rna_decont = ch_rna_input
-        } else if ( !params.decont_off && params.dedupe ){
+        } else if ( !params.decont_off && params.dedupe && !params.remove_rRNA ){
             ch_rna_decont = DEDUP.out.reads
-            } else if ( !params.decont_off && !params.dedupe ){
+            } else if ( !params.decont_off && !params.dedupe && params.remove_rRNA ){
             ch_rna_decont = RIBOFILTER.out.reads
-    }
+				} else if ( !params.decont_off && !params.dedupe && !params.remove_rRNA ){
+					ch_rna_decont = FASTP.out.microbereads
+				
+					}
         KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
         PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
         DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned)
