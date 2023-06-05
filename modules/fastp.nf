@@ -1,9 +1,10 @@
 // decontamination or removal of human reads from RNAseq, using fastp and STAR. 
-
+// a ? b: c means if (a) b else c (ternary if special operator)  
 process FASTP {
 	label "process_high"
 	tag "${sample_id}"
-	publishDir "${params.outdir}/decont/RNA/fastp_tmp_fastq", mode: 'copy', pattern: '*.fastq.gz'
+	publishDir "${params.outdir}/decont/RNA/fastp_tmp_fastq", mode: 'copy', pattern: '*_fastp_{1,2}.fastq.gz'
+	publishDir { !params.dedupe && !params.remove_rRNA ? "${params.outdir}/decont/RNA" : "${params.outdir}/decont/RNA/fastp_tmp_fastq" }, mode: 'copy', pattern: '*_unmapped_{1,2}.fastq.gz'
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy', pattern: '*.{json,html}'
 	
 	
