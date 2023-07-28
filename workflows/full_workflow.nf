@@ -270,27 +270,33 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 // this main workflow will generate all intermediate files and can be resumed with nextflow
 workflow FULL {
     if ( params.process_rna ){
-        FASTP(params.star_index, ch_rna_input)
+        
+	if ( !params.decont_off ){
+		FASTP(params.star_index, ch_rna_input)
+		ch_rna_microbes = FASTP.out.microbereads
+	} else if ( params.decont_off ){
+		ch_rna_microbes = ch_rna_input
+	}
 		
-	if ( !params.decont_off && params.process_rna && params.remove_rRNA ){
-		RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
+	
+	if ( params.remove_rRNA ){
+		RIBOFILTER(params.ribokmers, ch_rna_microbes)
 	}
 	
 	if ( params.remove_rRNA && params.dedupe ){
         DEDUP(RIBOFILTER.out.reads)
 	} else if ( !params.remove_rRNA && params.dedupe ){
-		DEDUP(FASTP.out.microbereads)
+		DEDUP(ch_rna_microbes)
 	}
         
         if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
             ch_rna_decont = ch_rna_input
-        } else if ( !params.decont_off && params.dedupe && !params.remove_rRNA ){
+        } else if ( params.dedupe && !params.remove_rRNA ){
             ch_rna_decont = DEDUP.out.reads
-            } else if ( !params.decont_off && !params.dedupe && params.remove_rRNA ){
+            } else if ( !params.dedupe && params.remove_rRNA ){
             ch_rna_decont = RIBOFILTER.out.reads
 				} else if ( !params.decont_off && !params.dedupe && !params.remove_rRNA ){
 					ch_rna_decont = FASTP.out.microbereads
-				
 					}
         KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
         PANALIGN_RNA(params.pangenome_path, ch_rna_decont)

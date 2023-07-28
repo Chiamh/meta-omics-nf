@@ -13,7 +13,7 @@ process DEDUP {
 	tuple val(sample_id), path("*.log"), emit: logs
 	
 	when:
-	!params.decont_off && params.dedupe && params.process_rna
+	params.dedupe && params.process_rna
 	
 	script:
 	"""
