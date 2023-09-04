@@ -100,6 +100,7 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 	
 * MGX_annotations/ (for metagenomes) or MTX_annotations/ (for metatranscriptomes)
     * \*decont.emapper.annotations : Tab separated output from eggnog mapper 2.1.6.\
+\
 **Note: Apart from reads which did not align to pangene catalogs or Uniref90 databases, the following annotations are over features with >= 50% read coverage.**
 	* **\*all_aligned_taxonomy.tsv** : Tab separated output. Column 1: Pangene ID; Column 2: Read ID; Column 3: Kraken2 taxonomic classification; Column 4: Uniref90 ID.
 	* **\*all_aligned_taxonomy_summary.tsv** : Tab separated output summarizing read counts per kraken2 taxon per gene feature. Column 1: Number of unpaired reads; Column 2: Pangene ID; Column 3: Kraken2 classification; Column 4: Uniref90 ID.
