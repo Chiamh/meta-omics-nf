@@ -11,7 +11,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 
 ## Pipeline summary for metagenomic reads
 1. Adapter trimming and quality control using fastp (0.22.0)
-2. Removal of host (human) reads by mapping to a reference genome using bwa (0.7.17) 
+2. Optional removal of host (human) reads by mapping to a reference genome using bwa (0.7.17) 
 3. Taxonomic classification of non-human reads using Kraken2 (2.1.2) and taxonomic abundance re-estimation using Bracken (2.6.1)
 4. Optional removal of microbial spike-in sequences
 5. Functional annotation of reads by mapping to a microbial gene catalog of choice using bowtie2 (2.4.4)
@@ -20,8 +20,8 @@ This pipeline currently only accepts paired-end reads as inputs.
 
 ## Pipeline summary for metatranscriptomic reads
 1. Adapter trimming and quality control using fastp (0.22.0)
-2. Removal of host (human) reads using STAR (2.7.9a), a splice aware aligner.
-3. Computational removal of prokaryotic and eukaryotic rRNAs using a k-mer based strategy with bbmap (38.93)
+2. Optional removal of host (human) reads using STAR (2.7.9a), a splice aware aligner.
+3. Optional computational removal of prokaryotic and eukaryotic rRNAs using a k-mer based strategy with bbmap (38.93)
 4. Optional sequence de-duplication using bbmap (38.93) clumpify.sh
 5. Taxonomic classification of non-human reads using Kraken2 (2.1.2)
 6. Functional annotation of reads by mapping to a microbial gene catalog of choice using bowtie2 (2.4.4)
@@ -73,7 +73,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 Why is it preferable to perform functional annotations using unpaired despite paired-end data? [Read this.](https://github.com/biobakery/humann#humann-30-and-paired-end-sequencing-data)
 
 * decont/DNA (for metagenomes) or decont/RNA (for metatranscriptomes)
-    * These folders contain decontaminated reads in fastq.gz format. Decontamination means adapter removal, host read removal, rRNA removal (for MTX) and optional de-duplication (for MTX)
+    * These folders contain decontaminated reads in fastq.gz format. Decontamination means adapter removal, host read removal, rRNA removal (for MTX) and de-duplication (for MTX). These steps are on by default, but are optional.
 
 * kraken2_out/DNA
     * \*kraken2.out : Kraken2 [raw output](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#standard-kraken-output-format) with taxonomic classification for each read.
@@ -99,12 +99,12 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 	* \*uniref90_unaligned.fa : All reads that did not align to the Uniref90 database (and also by consequence, the pangene catalog)
 	
 * MGX_annotations/ (for metagenomes) or MTX_annotations/ (for metatranscriptomes)
-**Note: Apart from reads which did not align to pangene catalogs or Uniref90 databases, all annotations are over features with >= 50% read coverage.**
     * \*decont.emapper.annotations : Tab separated output from eggnog mapper 2.1.6.
+**Note: Apart from reads which did not align to pangene catalogs or Uniref90 databases, the following annotations are over features with >= 50% read coverage.**
 	* **\*all_aligned_taxonomy.tsv** : Tab separated output. Column 1: Pangene ID; Column 2: Read ID; Column 3: Kraken2 taxonomic classification; Column 4: Uniref90 ID.
 	* **\*all_aligned_taxonomy_summary.tsv** : Tab separated output summarizing read counts per kraken2 taxon per gene feature. Column 1: Number of unpaired reads; Column 2: Pangene ID; Column 3: Kraken2 classification; Column 4: Uniref90 ID.
 	* **\*unaligned_taxonomy.tsv** : Tab separated output. Column 1: Read ID; Column 2: Kraken2 taxonomic classification. This details the taxonomic classifications for reads which did not align to pangene catalogs or Uniref90 databases
-	* **\*panalign_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for pangenes with >= 50% read coverage. Columns are in order: pangene length, percent_cov, unpaired_read_count, pangene_desc, uniref90_ID, uniref90_desc, uniref90_GO, emapper_max_annot_OG, emapper_OG, [emapper_max_annot_lvl](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.10#user-content-Orthologous_Groups_fields), [eggnog_cat](http://clovr.org/docs/clusters-of-orthologous-groups-cogs/), eggnog_GO, eggnog_desc
+	* **\*panalign_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for pangenes with >= 50% read coverage. Columns are in order: pangene length, percent_cov, unpaired_read_count, pangene_desc, uniref90_ID, uniref90_desc, uniref90_GO, emapper_max_annot_OG, emapper_OG, [emapper_max_annot_lvl](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#user-content-Annotations_file), [eggnog_cat](http://clovr.org/docs/clusters-of-orthologous-groups-cogs/), eggnog_GO, eggnog_desc
 	* **\*transl-search_annot.tsv** : Tab separated output containing functional annotations (COGs, Uniref90 and Gene Onthologies) for Uniref90 clusters (with no pangene assignment) with >= 50% read coverage. Columns are in order: uniref90_ID, percent_cov, AA_length, unpaired_read_count, uniref90_desc, emapper_max_annot_OG, emapper_OG, emapper_max_annot_lvl, eggnog_cat, eggnog_GO, eggnog_desc, uniref90_GO
 
 ## Updates
