@@ -291,7 +291,7 @@ workflow FULL {
         
         if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
             ch_rna_decont = ch_rna_input
-        } else if ( params.dedupe && !params.remove_rRNA ){
+        } else if ( params.dedupe ){
             ch_rna_decont = DEDUP.out.reads
             } else if ( !params.dedupe && params.remove_rRNA ){
             ch_rna_decont = RIBOFILTER.out.reads
