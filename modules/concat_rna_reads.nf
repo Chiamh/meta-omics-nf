@@ -16,9 +16,9 @@ process CONCAT_RNA {
 	"""
 	echo concatenating reads from "${sample_id}"
 	
-	cat "${sample_id}"*_1*.gz > "${sample_id}_merged_1.fastq.gz"
+	cat "${sample_id}"*1.{fq,fastq}.gz > "${sample_id}_merged_1.fastq.gz"
 	
-	cat "${sample_id}"*_2*.gz > "${sample_id}_merged_2.fastq.gz"
+	cat "${sample_id}"*2.{fq,fastq}.gz > "${sample_id}_merged_2.fastq.gz"
 	
 	echo finished processing "${sample_id}"
 	

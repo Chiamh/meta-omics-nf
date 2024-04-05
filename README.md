@@ -110,10 +110,11 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 
 ## Updates
 
-* There is now a "concatenate" subworkflow to merge fastq.gz files across different lanes for the same sample ID.
+* There is now a "concatenate" subworkflow to merge fastq.gz files across different lanes for the same sample ID. Fixed bug in the concat module due to imprecise globbing. (Apr 2024)
 * Fixed code to not have the same variable name appear more than once in the input block for any process. 
 * Add distinct minimizer information to kraken2 reports for false positive filtering. (Mar 2023)
 * Add taxonomy summary reports (Mar 2023)
+* Better templates for singularity.config and running singularity. Fix conflict in the main nextflow.config file. (Apr 2024)
 
 	
 ## Contact
