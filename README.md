@@ -66,6 +66,17 @@ This pipeline currently only accepts paired-end reads as inputs.
 	
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry classify --rna_reads /path/to/DECONTAMINATED_metatranscriptomes --dna_reads /path/to/DECONTAMINATED_metagenomes --outdir /path/to/results
 	```
+## Input requirements
+Either:
+1. Absolute path to the **folder** containing the DNA and/or RNA reads specified with the --dna_reads and/or --rna_reads arguments. 
+* This will search the folder(s) recursively for fastq files and run the pipeline on all of them.  
+or:  
+2. Absolute path to the **folder** containing the DNA and/or RNA reads specified with the --dna_reads and/or --rna_reads arguments **and** csv files specified with the --rna_list and --dna_list arguments.
+* The csv files are in a 3 column format with headers. They correspond to the library ID, file name of read 1 and file name of read 2 respectively.
+<img src='/docs/input_csv_example.PNG' width='500'>
+* This will run the pipeline on the files specified in the --rna_list and/or --dna_list only
+* These input lists are ignored by the "concatenate" workflow by design. 
+
 ## Output files (bolded items are noteworthy for downstream analyses)
 
 **Caveat: Read counts (paired-end) for some reports are not directly comparable with read counts (unpaired) for other reports. This is necessary because kraken2 is run in paired-end mode, whereas functional annotations take "unpaired" inputs.**
@@ -110,11 +121,7 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 
 ## Updates
 
-* There is now a "concatenate" subworkflow to merge fastq.gz files across different lanes for the same sample ID. Fixed bug in the concat module due to imprecise globbing. (Apr 2024)
-* Fixed code to not have the same variable name appear more than once in the input block for any process. 
-* Add distinct minimizer information to kraken2 reports for false positive filtering. (Mar 2023)
-* Add taxonomy summary reports (Mar 2023)
-* Better templates for singularity.config and running singularity. Fix conflict in the main nextflow.config file. (Apr 2024)
+* Added more flexible input requirements (Mar 2025)
 
 	
 ## Contact
