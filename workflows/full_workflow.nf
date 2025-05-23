@@ -252,6 +252,7 @@ if (params.process_dna && params.dna_list){
 
 include { FASTP } from '../modules/fastp.nf'
 include { RIBOFILTER } from '../modules/rRNAfilter.nf'
+include { DEDUP_HUMID } from '../modules/dedup_humid.nf'
 include { DEDUP } from '../modules/dedup.nf'
 include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
 include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
@@ -295,9 +296,11 @@ workflow FULL {
 	}
 	
 	if ( params.remove_rRNA && params.dedupe ){
-        DEDUP(RIBOFILTER.out.reads)
+        	DEDUP(RIBOFILTER.out.reads)
+		//DEDUP_HUMID(RIBOFILTER.out.reads)
 	} else if ( !params.remove_rRNA && params.dedupe ){
 		DEDUP(ch_rna_microbes)
+                //DEDUP_HUMID(ch_rna_microbes)
 	}
         
         if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
