@@ -249,11 +249,14 @@ if (params.process_dna && params.dna_list){
     Include modules
 ========================================================================================
 */
-
+include { UMITOOLS_EXTRACT } from '../modules/umitools_extract.nf'
 include { FASTP } from '../modules/fastp.nf'
 include { RIBOFILTER } from '../modules/rRNAfilter.nf'
-include { DEDUP_HUMID } from '../modules/dedup_humid.nf'
-include { DEDUP } from '../modules/dedup.nf'
+// include { DEDUP_HUMID } from '../modules/dedup_humid.nf'
+// include { DEDUP_CLUMPIFY } from '../modules/dedup_clumpify.nf'
+include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_PANALIGN } from '../modules/umitools_dedup.nf'
+include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_DMND } from '../modules/umitools_dedup.nf'
+include { KRAKEN2_RNA_PAN_DMND } from '../modules/kraken_rna_pan_dmnd.nf'
 include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
 include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
 include { BRACKEN } from '../modules/bracken.nf'
@@ -282,79 +285,91 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 // this main workflow will generate all intermediate files and can be resumed with nextflow
 workflow FULL {
     if ( params.process_rna ){
-        
-	if ( !params.decont_off ){
-		FASTP(params.star_index, ch_rna_input)
-		ch_rna_microbes = FASTP.out.microbereads
-	} else if ( params.decont_off ){
-		ch_rna_microbes = ch_rna_input
-	}
-		
-	
-	if ( params.remove_rRNA ){
-		RIBOFILTER(params.ribokmers, ch_rna_microbes)
-	}
-	
-	if ( params.remove_rRNA && params.dedupe ){
-        	DEDUP(RIBOFILTER.out.reads)
-		//DEDUP_HUMID(RIBOFILTER.out.reads)
-	} else if ( !params.remove_rRNA && params.dedupe ){
-		DEDUP(ch_rna_microbes)
-                //DEDUP_HUMID(ch_rna_microbes)
-	}
-        
-        if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
-            ch_rna_decont = ch_rna_input
-        } else if ( params.dedupe ){
-            ch_rna_decont = DEDUP.out.reads
-            } else if ( !params.dedupe && params.remove_rRNA ){
-            ch_rna_decont = RIBOFILTER.out.reads
-				} else if ( !params.decont_off && !params.dedupe && !params.remove_rRNA ){
-					ch_rna_decont = FASTP.out.microbereads
-					}
-        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
-        PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
-        DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned)
-	ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_RNA.out.aligned)
-	ANNOT_PAN_RNA(params.pangenome_annots, PANALIGN_RNA.out.coverage)
+        // 1. add umi to headers 
+        if ( params.dedupe ){
+            UMITOOLS_EXTRACT( ch_rna_input )
+            ch_rna_input = UMITOOLS_EXTRACT.out.withumiheader
+        }
 
-	ch_trf_taxa_rna_in=KRAKEN2_RNA.out.k2out.join(PANALIGN_RNA.out.aligned).join(DMND_RNA.out.aligned).join(DMND_RNA.out.unaligned)
-	TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
+        // 2. remove human host RNA and 3. remove rRNAs
+        if ( params.decont_off ){
+            if ( params.remove_rRNA ){
+                RIBOFILTER(params.ribokmers, ch_rna_microbes)
+                ch_rna_decont = RIBOFILTER.out.reads
+            } else {
+                ch_rna_decont = ch_rna_input
+            }
+        } else {
+            FASTP(params.star_index, ch_rna_input)
+            if ( params.remove_rRNA ){
+                RIBOFILTER(params.ribokmers, ch_rna_microbes)
+                ch_rna_decont = RIBOFILTER.out.reads
+            } else {
+                ch_rna_decont = FASTP.out.microbereads
+            }
+        }
+
+        // 4. Panalign to pangenome IHSMGC database
+        PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
+        // 5. Translated annotation - sam format -> outfmt 101
+        DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned) //need to add samtools to docker container
+
+        if ( params.dedupe ){
+            // dedupe PANALIGN aligned reads
+            UMITOOLS_DEDUP_PANALIGN( PANALIGN_RNA.out.aligned, 'pan' )
+            ch_pan_rna_aligned = UMITOOLS_DEDUP_PANALIGN.out.dedup_bam
+            ch_pan_rna_fastq = UMITOOLS_DEDUP_PANALIGN.out.dedup_fastq
+            // dedupe PANALIGN unaligned but DMND aligned reads
+            UMITOOLS_DEDUP_DMND( DMND_RNA.out.aligned, 'uniref90' )
+            ch_dmnd_rna_aligned = UMITOOLS_DEDUP_DMND.out.dedup_bam
+            ch_dmnd_rna_fastq = UMITOOLS_DEDUP_DMND.out.dedup_fastq
+            // kraken2
+            KRAKEN2_RNA_PAN_DMND(params.kraken2db, ch_pan_rna_fastq, ch_dmnd_rna_fastq)
+            ch_kraken2_k2out=KRAKEN2_RNA_PAN_DMND.out.k2out
+        } else {
+            ch_pan_rna_aligned = PANALIGN_RNA.out.aligned
+            ch_dmnd_rna_aligned = DMND_RNA.out.aligned
+            KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
+            ch_kraken2_k2out=KRAKEN2_RNA.out.k2out
+        }
+        
+        ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, ch_dmnd_rna_aligned)
+        ANNOT_PAN_RNA(params.pangenome_annots, PANALIGN_RNA.out.coverage)
+
+        ch_trf_taxa_rna_in=ch_kraken2_k2out.join(ch_pan_rna_aligned).join(ch_dmnd_rna_aligned).join(DMND_RNA.out.unaligned)
+        TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
     }
     
     if ( params.process_dna ){
-        DECONT_DNA(params.bwaidx_path, ch_dna_input)
         
         if ( params.decont_off ) {
             ch_dna_decont = ch_dna_input
-        } else if ( !params.decont_off ) {
+        } else {
+            DECONT_DNA(params.bwaidx_path, ch_dna_input)
             ch_dna_decont = DECONT_DNA.out.reads
         }
-        
+
         KRAKEN2_DNA(params.kraken2db, ch_dna_decont)
         BRACKEN(params.kraken2db, params.readlength, KRAKEN2_DNA.out.k2tax)
 
-	if ( params.rm_spikes ){
+        if ( params.rm_spikes ){
+            ch_panalign_dna_in = ch_dna_decont.join(KRAKEN2_DNA.out.k2out)
+            PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
+            ch_pan_dna_aligned = PANALIGN_DNA_SPIKES.out.aligned
+            ch_pan_dna_unaligned = PANALIGN_DNA_SPIKES.out.unaligned
+            ch_pan_dna_coverage = PANALIGN_DNA_SPIKES.out.coverage
+        } else {
+            PANALIGN_DNA(params.pangenome_path, ch_dna_decont)
+            ch_pan_dna_aligned = PANALIGN_DNA_SPIKES.out.aligned
+            ch_pan_dna_unaligned = PANALIGN_DNA.out.unaligned
+            ch_pan_dna_coverage = PANALIGN_DNA.out.coverage
+        }
+        DMND_DNA(params.dmnddb, ch_pan_dna_unaligned)
 
-	ch_panalign_dna_in=ch_dna_decont.join(KRAKEN2_DNA.out.k2out)
+        ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
+        ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA_SPIKES.out.coverage)
 
-	PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
-	DMND_DNA(params.dmnddb, PANALIGN_DNA_SPIKES.out.unaligned)
-	ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
-	ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA_SPIKES.out.coverage)
-
-	ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA_SPIKES.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
-
-	TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
-	} else if ( !params.rm_spikes ){
-	PANALIGN_DNA(params.pangenome_path, ch_dna_decont)
-	DMND_DNA(params.dmnddb, PANALIGN_DNA.out.unaligned)
-	ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
-	ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA.out.coverage)
-
-	ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
-
-	TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
-	}	
+        ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(ch_pan_dna_aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
+        TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
     }  
 }

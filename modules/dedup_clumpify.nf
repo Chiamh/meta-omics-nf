@@ -1,6 +1,6 @@
 // Read de-duplication of RNAseq data using clumpify.sh
 
-process DEDUP {
+process DEDUP_CLUMPIFY {
 	label "process_medium"
 	tag "${sample_id}"
 	publishDir "${params.outdir}/decont/RNA", mode: 'copy'
