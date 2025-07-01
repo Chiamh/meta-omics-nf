@@ -1,3 +1,4 @@
+
 // decontamination or removal of human reads from RNAseq, using fastp and STAR. 
 // a ? b: c means if (a) b else c (ternary if special operator)  
 process FASTP {

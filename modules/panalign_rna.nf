@@ -15,7 +15,7 @@ process PANALIGN_RNA {
 	tuple val(sample_id), path(reads_file)
 	
 	output:
-	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.sorted.bam"), emit: aligned
+	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.sorted.bam"), path("${sample_id}_bt2_pangenome_aligned.sorted.bam.bai"), emit: aligned
 	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned_filtered_cov.tsv"), emit: coverage
 	tuple val(sample_id), path("${sample_id}_bt2_pangenome_unaligned.fastq.gz"), emit: unaligned
 	tuple val(sample_id), path("${sample_id}_bt2.log"), emit: logs

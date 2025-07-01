@@ -252,11 +252,9 @@ if (params.process_dna && params.dna_list){
 include { UMITOOLS_EXTRACT } from '../modules/umitools_extract.nf'
 include { FASTP } from '../modules/fastp.nf'
 include { RIBOFILTER } from '../modules/rRNAfilter.nf'
-// include { DEDUP_HUMID } from '../modules/dedup_humid.nf'
-// include { DEDUP_CLUMPIFY } from '../modules/dedup_clumpify.nf'
 include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_PANALIGN } from '../modules/umitools_dedup.nf'
 include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_DMND } from '../modules/umitools_dedup.nf'
-include { KRAKEN2_RNA_PAN_DMND } from '../modules/kraken_rna_pan_dmnd.nf'
+include { PAN_DMND_KRAKEN_FASTQ } from '../modules/pan_dmnd_kraken_fastq.nf'
 include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
 include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
 include { BRACKEN } from '../modules/bracken.nf'
@@ -288,13 +286,13 @@ workflow FULL {
         // 1. add umi to headers 
         if ( params.dedupe ){
             UMITOOLS_EXTRACT( ch_rna_input )
-            ch_rna_input = UMITOOLS_EXTRACT.out.withumiheader
+            ch_rna_input = UMITOOLS_EXTRACT.out.reads
         }
 
         // 2. remove human host RNA and 3. remove rRNAs
         if ( params.decont_off ){
             if ( params.remove_rRNA ){
-                RIBOFILTER(params.ribokmers, ch_rna_microbes)
+                RIBOFILTER(params.ribokmers, ch_rna_input)
                 ch_rna_decont = RIBOFILTER.out.reads
             } else {
                 ch_rna_decont = ch_rna_input
@@ -302,7 +300,7 @@ workflow FULL {
         } else {
             FASTP(params.star_index, ch_rna_input)
             if ( params.remove_rRNA ){
-                RIBOFILTER(params.ribokmers, ch_rna_microbes)
+                RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
                 ch_rna_decont = RIBOFILTER.out.reads
             } else {
                 ch_rna_decont = FASTP.out.microbereads
@@ -312,28 +310,26 @@ workflow FULL {
         // 4. Panalign to pangenome IHSMGC database
         PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
         // 5. Translated annotation - sam format -> outfmt 101
-        DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned) //need to add samtools to docker container
+        DMND_RNA(params.dmnddb, params.dmndfai, PANALIGN_RNA.out.unaligned) //need to add samtools to docker container
 
         if ( params.dedupe ){
             // dedupe PANALIGN aligned reads
             UMITOOLS_DEDUP_PANALIGN( PANALIGN_RNA.out.aligned, 'pan' )
             ch_pan_rna_aligned = UMITOOLS_DEDUP_PANALIGN.out.dedup_bam
-            ch_pan_rna_fastq = UMITOOLS_DEDUP_PANALIGN.out.dedup_fastq
             // dedupe PANALIGN unaligned but DMND aligned reads
-            UMITOOLS_DEDUP_DMND( DMND_RNA.out.aligned, 'uniref90' )
+            UMITOOLS_DEDUP_DMND( DMND_RNA.out.bam, 'uniref90' )
             ch_dmnd_rna_aligned = UMITOOLS_DEDUP_DMND.out.dedup_bam
-            ch_dmnd_rna_fastq = UMITOOLS_DEDUP_DMND.out.dedup_fastq
-            // kraken2
-            KRAKEN2_RNA_PAN_DMND(params.kraken2db, ch_pan_rna_fastq, ch_dmnd_rna_fastq)
-            ch_kraken2_k2out=KRAKEN2_RNA_PAN_DMND.out.k2out
+            // merge pangenome aligned fastq and dmnd aligned fastq
+            PAN_DMND_KRAKEN_FASTQ( ch_pan_rna_aligned, ch_dmnd_rna_aligned, ch_rna_decont )
+            ch_rna_decont = PAN_DMND_KRAKEN_FASTQ.out.merged
         } else {
             ch_pan_rna_aligned = PANALIGN_RNA.out.aligned
             ch_dmnd_rna_aligned = DMND_RNA.out.aligned
-            KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
-            ch_kraken2_k2out=KRAKEN2_RNA.out.k2out
         }
+        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
+        ch_kraken2_k2out=KRAKEN2_RNA.out.k2out
         
-        ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, ch_dmnd_rna_aligned)
+        //ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, ch_dmnd_rna_aligned)
         ANNOT_PAN_RNA(params.pangenome_annots, PANALIGN_RNA.out.coverage)
 
         ch_trf_taxa_rna_in=ch_kraken2_k2out.join(ch_pan_rna_aligned).join(ch_dmnd_rna_aligned).join(DMND_RNA.out.unaligned)

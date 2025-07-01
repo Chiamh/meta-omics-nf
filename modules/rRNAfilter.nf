@@ -41,6 +41,3 @@ process RIBOFILTER {
 	}
 
 }
-
-	
-	
