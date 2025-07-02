@@ -319,20 +319,23 @@ workflow FULL {
             // dedupe PANALIGN unaligned but DMND aligned reads
             UMITOOLS_DEDUP_DMND( DMND_RNA.out.bam, 'uniref90' )
             // merge pangenome aligned fastq and dmnd aligned fastq
-            PAN_DMND_KRAKEN_FASTQ( UMITOOLS_DEDUP_PANALIGN.out.dedup_bam, UMITOOLS_DEDUP_DMND.out.dedup_bam, ch_rna_decont )
+            PAN_DMND_KRAKEN_FASTQ( UMITOOLS_DEDUP_PANALIGN.out.dedup_bam, UMITOOLS_DEDUP_DMND.out.dedup_bam, 
+                                   DMND_RNA.out.aligned, ch_rna_decont )
             ch_rna_decont = PAN_DMND_KRAKEN_FASTQ.out.merged
+            ch_dmnd_rna_aligned=PAN_DMND_KRAKEN_FASTQ.out.dmnd
         } else {
             PANALIGN_RNA.out.aligned
                 .map { it ->[ it[0], it[1] ] }
                 .set { ch_pan_rna_aligned }
+            ch_dmnd_rna_aligned=DMND_RNA.out.aligned
         }
         KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
         ch_kraken2_k2out=KRAKEN2_RNA.out.k2out
         
-        ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_RNA.out.aligned)
+        ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, ch_dmnd_rna_aligned)
         ANNOT_PAN_RNA(params.pangenome_annots, ch_pan_rna_aligned )
 
-        ch_trf_taxa_rna_in=ch_kraken2_k2out.join(ch_pan_rna_aligned).join(DMND_RNA.out.aligned).join(DMND_RNA.out.unaligned)
+        ch_trf_taxa_rna_in=ch_kraken2_k2out.join(ch_pan_rna_aligned).join(ch_dmnd_rna_aligned).join(DMND_RNA.out.unaligned)
         TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
     }
     
