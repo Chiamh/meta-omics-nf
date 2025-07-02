@@ -34,9 +34,3 @@ process ANNOT_DMND_RNA {
 	"""
 
 }
-	
-	
-
-
-
-
