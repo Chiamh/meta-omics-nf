@@ -266,6 +266,7 @@ include { DMND_RNA_UNALIGNED } from '../modules/dmnd_rna_unaligned.nf'
 include { DMND_RNA } from '../modules/dmnd_rna.nf'
 include { DMND_DNA } from '../modules/dmnd_dna.nf'
 include { DECONT_DNA } from '../modules/decont_dna.nf'
+include { DECONT_DNA_PANALIGN } from '../modules/decont_dna_panalign.nf'
 include { ANNOT_DMND_RNA } from '../modules/annot_dmnd_rna.nf'
 include { ANNOT_DMND_DNA } from '../modules/annot_dmnd_dna.nf'
 include { ANNOT_PAN_RNA } from '../modules/annot_pan_rna.nf'
@@ -351,7 +352,8 @@ workflow FULL {
             ch_dna_decont = ch_dna_input
         } else {
             DECONT_DNA(params.bwaidx_path, ch_dna_input)
-            ch_dna_decont = DECONT_DNA.out.reads
+            DECONT_DNA_PANALIGN(params.human_pangenome_path, DECONT_DNA.out.reads)
+            ch_dna_decont = DECONT_DNA_PANALIGN.out.reads
         }
 
         KRAKEN2_DNA(params.kraken2db, ch_dna_decont)
