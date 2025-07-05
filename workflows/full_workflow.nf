@@ -351,7 +351,7 @@ workflow FULL {
         if ( params.decont_off ) {
             ch_dna_decont = ch_dna_input
         } else {
-            DECONT_DNA(params.bwaidx_path, ch_dna_input)
+            DECONT_DNA(params.star_index, ch_dna_input)
             DECONT_DNA_PANALIGN(params.human_pangenome_path, DECONT_DNA.out.reads)
             ch_dna_decont = DECONT_DNA_PANALIGN.out.reads
         }
