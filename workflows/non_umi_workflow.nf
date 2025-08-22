@@ -55,7 +55,7 @@ def helpMessage() {
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
-      -entry                        Can be one of [nonumi, classify, concatenate]. Note SINGLE dash.
+      -entry                        Can be one of [nonumi, classify, concatenate]. For disk space saving workflows. Note SINGLE dash.
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
@@ -238,30 +238,26 @@ if (params.process_dna && params.dna_list){
     Include modules
 ========================================================================================
 */
-include { UMITOOLS_EXTRACT } from '../modules/umitools_extract.nf'
-include { FASTP } from '../modules/fastp.nf'
-include { RIBOFILTER } from '../modules/rRNAfilter.nf'
-include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_PANALIGN } from '../modules/umitools_dedup.nf'
-include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_DMND } from '../modules/umitools_dedup.nf'
-include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_UNALIGNED } from '../modules/umitools_dedup.nf'
-include { PAN_DMND_KRAKEN_FASTQ } from '../modules/pan_dmnd_kraken_fastq.nf'
-include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
-include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
-include { BRACKEN } from '../modules/bracken.nf'
-include { PANALIGN_RNA } from '../modules/panalign_rna.nf'
-include { PANALIGN_DNA } from '../modules/panalign_dna.nf'
-include { PANALIGN_DNA_SPIKES } from '../modules/panalign_dna_spikes.nf'
-include { DMND_RNA_UNALIGNED } from '../modules/dmnd_rna_unaligned.nf'
-include { DMND_RNA } from '../modules/dmnd_rna.nf'
-include { DMND_DNA } from '../modules/dmnd_dna.nf'
-include { DECONT_DNA } from '../modules/decont_dna.nf'
-include { DECONT_DNA_PANALIGN } from '../modules/decont_dna_panalign.nf'
-include { ANNOT_DMND_RNA } from '../modules/annot_dmnd_rna.nf'
-include { ANNOT_DMND_DNA } from '../modules/annot_dmnd_dna.nf'
-include { ANNOT_PAN_RNA } from '../modules/annot_pan_rna.nf'
-include { ANNOT_PAN_DNA } from '../modules/annot_pan_dna.nf'
-include { TRF_TAXA_DNA } from '../modules/transfer_taxa_dna.nf'
-include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
+
+include { FASTP } from '../modules/non_UMI_dedup_mods/fastp.nf'
+include { RIBOFILTER } from '../modules/non_UMI_dedup_mods/rRNAfilter.nf'
+include { DEDUP } from '../modules/non_UMI_dedup_mods/dedup.nf'
+include { KRAKEN2_RNA } from '../modules/non_UMI_dedup_mods/kraken_rna.nf'
+include { KRAKEN2_DNA } from '../modules/non_UMI_dedup_mods/kraken_dna.nf'
+include { BRACKEN } from '../modules/non_UMI_dedup_mods/bracken.nf'
+include { PANALIGN_RNA } from '../modules/non_UMI_dedup_mods/panalign_rna.nf'
+include { PANALIGN_DNA } from '../modules/non_UMI_dedup_mods/panalign_dna.nf'
+include { PANALIGN_DNA_SPIKES } from '../modules/non_UMI_dedup_mods/panalign_dna_spikes.nf'
+include { DMND_RNA } from '../modules/non_UMI_dedup_mods/dmnd_rna.nf'
+include { DMND_DNA } from '../modules/non_UMI_dedup_mods/dmnd_dna.nf'
+include { DECONT_DNA } from '../modules/non_UMI_dedup_mods/decont_dna.nf'
+include { DECONT_DNA_PANALIGN } from '../modules/non_UMI_dedup_mods/decont_dna_panalign.nf'
+include { ANNOT_DMND_RNA } from '../modules/non_UMI_dedup_mods/annot_dmnd_rna.nf'
+include { ANNOT_DMND_DNA } from '../modules/non_UMI_dedup_mods/annot_dmnd_dna.nf'
+include { ANNOT_PAN_RNA } from '../modules/non_UMI_dedup_mods/annot_pan_rna.nf'
+include { ANNOT_PAN_DNA } from '../modules/non_UMI_dedup_mods/annot_pan_dna.nf'
+include { TRF_TAXA_DNA } from '../modules/non_UMI_dedup_mods/transfer_taxa_dna.nf'
+include { TRF_TAXA_RNA } from '../modules/non_UMI_dedup_mods/transfer_taxa_rna.nf'
 
 /*
 ========================================================================================
@@ -273,99 +269,80 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 //https://github.com/nextflow-io/patterns/blob/master/docs/conditional-process.adoc
 
 // this main workflow will generate all intermediate files and can be resumed with nextflow
-workflow FULL {
+workflow NONUMI {
     if ( params.process_rna ){
-        // 1. add umi to headers 
-        if ( params.dedupe ){
-            UMITOOLS_EXTRACT( ch_rna_input )
-            ch_rna_input = UMITOOLS_EXTRACT.out.reads
-        }
-
-        // 2. remove human host RNA and 3. remove rRNAs
-        if ( params.decont_off ){
-            if ( params.remove_rRNA ){
-                RIBOFILTER(params.ribokmers, ch_rna_input)
-                ch_rna_decont = RIBOFILTER.out.reads
-            } else {
-                ch_rna_decont = ch_rna_input
-            }
-        } else {
-            FASTP(params.star_index, ch_rna_input)
-            if ( params.remove_rRNA ){
-                RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
-                ch_rna_decont = RIBOFILTER.out.reads
-            } else {
-                ch_rna_decont = FASTP.out.microbereads
-            }
-        }
-
-        // 4. Panalign to pangenome IHSMGC database
-        PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
-        // 5. Translated annotation - sam format -> outfmt 101
-        DMND_RNA(params.dmnddb, params.dmndfai, PANALIGN_RNA.out.unaligned) //need to add samtools to docker container
-        // 6. Get mapping coordinates for dmnd unaligned reads
-        DMND_RNA_UNALIGNED(ch_rna_decont, DMND_RNA.out.unaligned)
-
-        if ( params.dedupe ){
-            // dedupe PANALIGN aligned reads
-            UMITOOLS_DEDUP_PANALIGN( PANALIGN_RNA.out.aligned, 'pan' )
-            ch_pan_rna_aligned = UMITOOLS_DEDUP_PANALIGN.out.dedup_bam
-            // dedupe PANALIGN unaligned but DMND aligned reads
-            UMITOOLS_DEDUP_DMND( DMND_RNA.out.bam, 'uniref90' )
-            // dedupe DMND unaligned reads
-            UMITOOLS_DEDUP_UNALIGNED( DMND_RNA_UNALIGNED.out.bam, 'unaligned' )
-            // merge pangenome aligned fastq and dmnd aligned fastq
-            PAN_DMND_KRAKEN_FASTQ( UMITOOLS_DEDUP_PANALIGN.out.dedup_bam, UMITOOLS_DEDUP_DMND.out.dedup_bam, UMITOOLS_DEDUP_UNALIGNED.out.dedup_bam, 
-                                   DMND_RNA.out.aligned, ch_rna_decont )
-            ch_rna_decont = PAN_DMND_KRAKEN_FASTQ.out.merged
-            ch_dmnd_rna_aligned=PAN_DMND_KRAKEN_FASTQ.out.dmnd
-        } else {
-            PANALIGN_RNA.out.aligned
-                .map { it ->[ it[0], it[1] ] }
-                .set { ch_pan_rna_aligned }
-            ch_dmnd_rna_aligned=DMND_RNA.out.aligned
-        }
-        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
-        ch_kraken2_k2out=KRAKEN2_RNA.out.k2out
         
-        ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, ch_dmnd_rna_aligned)
-        ANNOT_PAN_RNA(params.pangenome_annots, ch_pan_rna_aligned )
+	if ( !params.decont_off ){
+		FASTP(params.star_index, ch_rna_input)
+		ch_rna_microbes = FASTP.out.microbereads
+	} else if ( params.decont_off ){
+		ch_rna_microbes = ch_rna_input
+	}
+		
+	
+	if ( params.remove_rRNA ){
+		RIBOFILTER(params.ribokmers, ch_rna_microbes)
+	}
+	
+	if ( params.remove_rRNA && params.dedupe ){
+        DEDUP(RIBOFILTER.out.reads)
+	} else if ( !params.remove_rRNA && params.dedupe ){
+		DEDUP(ch_rna_microbes)
+	}
+        
+        if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
+            ch_rna_decont = ch_rna_input
+        } else if ( params.dedupe ){
+            ch_rna_decont = DEDUP.out.reads
+            } else if ( !params.dedupe && params.remove_rRNA ){
+            ch_rna_decont = RIBOFILTER.out.reads
+				} else if ( !params.decont_off && !params.dedupe && !params.remove_rRNA ){
+					ch_rna_decont = FASTP.out.microbereads
+					}
+        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
+        PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
+        DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned)
+	ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_RNA.out.aligned)
+	ANNOT_PAN_RNA(params.pangenome_annots, PANALIGN_RNA.out.coverage)
 
-        ch_trf_taxa_rna_in=ch_kraken2_k2out.join(ch_pan_rna_aligned).join(ch_dmnd_rna_aligned).join(DMND_RNA.out.unaligned)
-        TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
+	ch_trf_taxa_rna_in=KRAKEN2_RNA.out.k2out.join(PANALIGN_RNA.out.aligned).join(DMND_RNA.out.aligned).join(DMND_RNA.out.unaligned)
+	TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
     }
     
     if ( params.process_dna ){
         
         if ( params.decont_off ) {
             ch_dna_decont = ch_dna_input
-        } else {
+        } else if ( !params.decont_off ) {
             DECONT_DNA(params.star_index, ch_dna_input)
-            DECONT_DNA_PANALIGN(params.human_pangenome_path, DECONT_DNA.out.reads)
-            ch_dna_decont = DECONT_DNA_PANALIGN.out.reads
+			DECONT_DNA_PANALIGN(params.human_pangenome_path, DECONT_DNA.out.reads)
+			ch_dna_decont = DECONT_DNA_PANALIGN.out.reads
         }
-
+        
         KRAKEN2_DNA(params.kraken2db, ch_dna_decont)
         BRACKEN(params.kraken2db, params.readlength, KRAKEN2_DNA.out.k2tax)
 
-        if ( params.rm_spikes ){
-            ch_panalign_dna_in = ch_dna_decont.join(KRAKEN2_DNA.out.k2out)
-            PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
-            ch_pan_dna_aligned = PANALIGN_DNA_SPIKES.out.aligned
-            ch_pan_dna_unaligned = PANALIGN_DNA_SPIKES.out.unaligned
-            ch_pan_dna_coverage = PANALIGN_DNA_SPIKES.out.coverage
-        } else {
-            PANALIGN_DNA(params.pangenome_path, ch_dna_decont)
-            ch_pan_dna_aligned = PANALIGN_DNA.out.aligned
-            ch_pan_dna_unaligned = PANALIGN_DNA.out.unaligned
-            ch_pan_dna_coverage = PANALIGN_DNA.out.coverage
-        }
-        DMND_DNA(params.dmnddb, ch_pan_dna_unaligned)
+	if ( params.rm_spikes ){
 
-        ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
-        ANNOT_PAN_DNA(params.pangenome_annots, ch_pan_dna_coverage)
+	ch_panalign_dna_in=ch_dna_decont.join(KRAKEN2_DNA.out.k2out)
 
-        ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(ch_pan_dna_aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
-        TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
+	PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
+	DMND_DNA(params.dmnddb, PANALIGN_DNA_SPIKES.out.unaligned)
+	ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
+	ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA_SPIKES.out.coverage)
+
+	ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA_SPIKES.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
+
+	TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
+	} else if ( !params.rm_spikes ){
+	PANALIGN_DNA(params.pangenome_path, ch_dna_decont)
+	DMND_DNA(params.dmnddb, PANALIGN_DNA.out.unaligned)
+	ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
+	ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA.out.coverage)
+
+	ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
+
+	TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
+	}	
     }  
 }
