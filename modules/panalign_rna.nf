@@ -15,8 +15,7 @@ process PANALIGN_RNA {
 	tuple val(sample_id), path(reads_file)
 	
 	output:
-	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.bam"), emit: aligned
-	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned_filtered_cov.tsv"), emit: coverage
+	tuple val(sample_id), path("${sample_id}_bt2_pangenome_aligned.bam"), path("${sample_id}_bt2_pangenome_aligned.bam.bai"), emit: aligned
 	tuple val(sample_id), path("${sample_id}_bt2_pangenome_unaligned.fastq.gz"), emit: unaligned
 	tuple val(sample_id), path("${sample_id}_bt2.log"), emit: logs
 	
@@ -24,13 +23,11 @@ process PANALIGN_RNA {
 	!params.panalign_off && params.process_rna
 	
 	script:
-    """
+        """
 	zcat ${reads_file[0]} ${reads_file[1]} | \\
 	(bowtie2 -q -x ${pangenome_path}/${params.pangenome} -U - --un-gz "${sample_id}_bt2_pangenome_unaligned.fastq.gz" \\
 	-p $task.cpus --very-sensitive) 2>"${sample_id}_bt2.log" | \\
-	samtools view -bS - > "${sample_id}_bt2_pangenome_aligned.bam"
-
-	panalign_helper.sh "${sample_id}"
-	
-    """
+	samtools view -bS - | samtools sort - > ${sample_id}_bt2_pangenome_aligned.bam 
+	samtools index ${sample_id}_bt2_pangenome_aligned.bam
+        """
 }

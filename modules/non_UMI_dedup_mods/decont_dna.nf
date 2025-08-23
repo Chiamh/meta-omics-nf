@@ -1,5 +1,5 @@
 
-// decontamination or removal of human reads from RNAseq, using fastp and STAR. 
+// decontamination or removal of human reads, using fastp and STAR. 
 // a ? b: c means if (a) b else c (ternary if special operator)  
 process DECONT_DNA {
 	label "process_high"
