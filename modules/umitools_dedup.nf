@@ -1,4 +1,4 @@
-// Add UMI to header from RNAseq data using umitools
+// Deduplicate RNAseq data using umitools
 
 process UMITOOLS_DEDUP {
 	label "process_high"
@@ -19,7 +19,7 @@ process UMITOOLS_DEDUP {
 	script:
 	"""
 	umi_tools dedup -I ${bam} --paired \\
-	--output-stats=${sample_id}_${tag} -S ${sample_id}_${tag}.umidedup.bam > ${sample_id}_${tag}_umi_dedup.log
+	-S ${sample_id}_${tag}.umidedup.bam -L ${sample_id}_${tag}_umi_dedup.log
 	"""
 }
 

@@ -238,12 +238,12 @@ if (params.process_dna && params.dna_list){
     Include modules
 ========================================================================================
 */
-include { UMITOOLS_EXTRACT } from '../modules/umitools_extract.nf'
-include { FASTP } from '../modules/fastp.nf'
+include { FASTP_UMI } from '../modules/fastp_umi.nf'
+include { STAR } from '../modules/star.nf'
 include { RIBOFILTER } from '../modules/rRNAfilter.nf'
 include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_PANALIGN } from '../modules/umitools_dedup.nf'
 include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_DMND } from '../modules/umitools_dedup.nf'
-include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_UNALIGNED } from '../modules/umitools_dedup.nf'
+include { UMITOOLS_CLUST } from '../modules/umitools_clust.nf'
 include { PAN_DMND_KRAKEN_FASTQ } from '../modules/pan_dmnd_kraken_fastq.nf'
 include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
 include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
@@ -251,7 +251,7 @@ include { BRACKEN } from '../modules/bracken.nf'
 include { PANALIGN_RNA } from '../modules/panalign_rna.nf'
 include { PANALIGN_DNA } from '../modules/panalign_dna.nf'
 include { PANALIGN_DNA_SPIKES } from '../modules/panalign_dna_spikes.nf'
-include { DMND_RNA_UNALIGNED } from '../modules/dmnd_rna_unaligned.nf'
+include { VSEARCH } from '../modules/vsearch_unaligned.nf'
 include { DMND_RNA } from '../modules/dmnd_rna.nf'
 include { DMND_DNA } from '../modules/dmnd_dna.nf'
 include { DECONT_DNA } from '../modules/decont_dna.nf'
@@ -275,11 +275,10 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 // this main workflow will generate all intermediate files and can be resumed with nextflow
 workflow FULL {
     if ( params.process_rna ){
-        // 1. add umi to headers 
-        if ( params.dedupe ){
-            UMITOOLS_EXTRACT( ch_rna_input )
-            ch_rna_input = UMITOOLS_EXTRACT.out.reads
-        }
+        // 1. Read QC and add umi to headers using fastp
+		FASTP_UMI( ch_rna_input )
+		ch_rna_input = FASTP_UMI.out.reads
+        } 
 
         // 2. remove human host RNA and 3. remove rRNAs
         if ( params.decont_off ){
@@ -290,12 +289,12 @@ workflow FULL {
                 ch_rna_decont = ch_rna_input
             }
         } else {
-            FASTP(params.star_index, ch_rna_input)
+            STAR(params.star_index, ch_rna_input)
             if ( params.remove_rRNA ){
-                RIBOFILTER(params.ribokmers, FASTP.out.microbereads)
+                RIBOFILTER(params.ribokmers, STAR.out.microbereads)
                 ch_rna_decont = RIBOFILTER.out.reads
             } else {
-                ch_rna_decont = FASTP.out.microbereads
+                ch_rna_decont = STAR.out.microbereads
             }
         }
 
@@ -303,8 +302,8 @@ workflow FULL {
         PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
         // 5. Translated annotation - sam format -> outfmt 101
         DMND_RNA(params.dmnddb, params.dmndfai, PANALIGN_RNA.out.unaligned) //need to add samtools to docker container
-        // 6. Get mapping coordinates for dmnd unaligned reads
-        DMND_RNA_UNALIGNED(ch_rna_decont, DMND_RNA.out.unaligned)
+        // 6. Cluster reads that failed to align in steps 4 and 5 using Vsearch
+        VSEARCH(DMND_RNA.out.unaligned)
 
         if ( params.dedupe ){
             // dedupe PANALIGN aligned reads
@@ -313,9 +312,9 @@ workflow FULL {
             // dedupe PANALIGN unaligned but DMND aligned reads
             UMITOOLS_DEDUP_DMND( DMND_RNA.out.bam, 'uniref90' )
             // dedupe DMND unaligned reads
-            UMITOOLS_DEDUP_UNALIGNED( DMND_RNA_UNALIGNED.out.bam, 'unaligned' )
-            // merge pangenome aligned fastq and dmnd aligned fastq
-            PAN_DMND_KRAKEN_FASTQ( UMITOOLS_DEDUP_PANALIGN.out.dedup_bam, UMITOOLS_DEDUP_DMND.out.dedup_bam, UMITOOLS_DEDUP_UNALIGNED.out.dedup_bam, 
+            UMITOOLS_CLUST( VSEARCH.out.clusters, 'unaligned' ) 
+            // merge pangenome aligned fastq, dmnd aligned fastq and unaligned reads into a new deduplicated fastq
+            PAN_DMND_KRAKEN_FASTQ( UMITOOLS_DEDUP_PANALIGN.out.dedup_bam, UMITOOLS_DEDUP_DMND.out.dedup_bam, UMITOOLS_CLUST.out.readnames, 
                                    DMND_RNA.out.aligned, ch_rna_decont )
             ch_rna_decont = PAN_DMND_KRAKEN_FASTQ.out.merged
             ch_dmnd_rna_aligned=PAN_DMND_KRAKEN_FASTQ.out.dmnd

@@ -7,9 +7,9 @@ process PAN_DMND_KRAKEN_FASTQ {
 	
 	input:
 	tuple val(sample_id), path(pan_umi_aligned_bam)
-        tuple val(sample_id), path(dmnd_umi_aligned_bam)
-        tuple val(sample_id), path(unaligned_umi_aligned_bam)
-        tuple val(sample_id), path(dmnd_umi_aligned_out)
+	tuple val(sample_id), path(dmnd_umi_aligned_bam)
+	tuple val(sample_id), path(unaligned_dedup_readnames)
+	tuple val(sample_id), path(dmnd_umi_aligned_out)
 	tuple val(sample_id), path(reads)
 	
 	output:
@@ -24,9 +24,11 @@ process PAN_DMND_KRAKEN_FASTQ {
         mv ${sample_id}_uniref90_aligned.out tmp
         samtools view ${dmnd_umi_aligned_bam} | cut -f1 | sort | uniq > read_names
         grep -f read_names tmp > ${sample_id}_uniref90_aligned.out
-        
+		
         samtools view ${pan_umi_aligned_bam} | cut -f1 | sort | uniq >> read_names
-        samtools view ${unaligned_umi_aligned_bam} | cut -f1 | sort | uniq >> read_names
+		
+        cat ${unaligned_dedup_readnames} >> read_names
+		
         seqtk subseq ${reads[0]} read_names > ${sample_id}_pan_dmnd_merged_1.fastq && gzip ${sample_id}_pan_dmnd_merged_1.fastq
         seqtk subseq ${reads[1]} read_names > ${sample_id}_pan_dmnd_merged_2.fastq && gzip ${sample_id}_pan_dmnd_merged_2.fastq
 	"""
