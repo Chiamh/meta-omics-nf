@@ -276,9 +276,8 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 workflow FULL {
     if ( params.process_rna ){
         // 1. Read QC and add umi to headers using fastp
-		FASTP_UMI( ch_rna_input )
-		ch_rna_input = FASTP_UMI.out.reads
-        } 
+        FASTP_UMI( ch_rna_input )
+        ch_rna_input = FASTP_UMI.out.reads
 
         // 2. remove human host RNA and 3. remove rRNAs
         if ( params.decont_off ){

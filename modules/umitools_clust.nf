@@ -24,7 +24,7 @@ process UMITOOLS_CLUST {
 	
 	python run_umi_clusterer.py ${sample_id}_input_to_umiclusterer.tsv ${sample_id}_umiclusterer_output.tsv directional
 	
-	bash extract_deduped_read_IDs_with_umi.sh ${sample_id}_umiclusterer_output.tsv <(awk -F "\t" -v OFS="\t" '{print $9, $2}' ${sample_id}_uniref90_unaligned_vsearch_0.95.out ) ${sample_id}
+	bash extract_deduped_read_IDs_with_umi.sh ${sample_id}_umiclusterer_output.tsv <(awk -F "\t" -v OFS="\t" '{print \$9, \$2}' ${sample_id}_uniref90_unaligned_vsearch_0.95.out ) ${sample_id}
 	
 	"""
 }
