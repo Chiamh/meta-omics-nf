@@ -18,13 +18,13 @@ process UMITOOLS_CLUST {
 	
 	script:
 	"""
-	bash format_clstr_file_after_vsearch.sh ${sample_id}_uniref90_unaligned_vsearch_0.95.out > ${sample_id}_barcode_by_cluster.txt
+	format_clstr_file_after_vsearch.sh ${sample_id}_uniref90_unaligned_vsearch_0.95.out > ${sample_id}_barcode_by_cluster.txt
 	
-	bash count_clstrs.sh ${sample_id}_barcode_by_cluster.txt > ${sample_id}_input_to_umiclusterer.tsv
+	count_clstrs.sh ${sample_id}_barcode_by_cluster.txt > ${sample_id}_input_to_umiclusterer.tsv
 	
-	python run_umi_clusterer.py ${sample_id}_input_to_umiclusterer.tsv ${sample_id}_umiclusterer_output.tsv directional
+	run_umi_clusterer.py ${sample_id}_input_to_umiclusterer.tsv ${sample_id}_umiclusterer_output.tsv directional
 	
-	bash extract_deduped_read_IDs_with_umi.sh ${sample_id}_umiclusterer_output.tsv <(awk -F "\t" -v OFS="\t" '{print \$9, \$2}' ${sample_id}_uniref90_unaligned_vsearch_0.95.out ) ${sample_id}
+	extract_deduped_read_IDs_with_umi.sh ${sample_id}_umiclusterer_output.tsv <(awk -F "\t" -v OFS="\t" '{print \$9, \$2}' ${sample_id}_uniref90_unaligned_vsearch_0.95.out ) ${sample_id}
 	
 	"""
 }
