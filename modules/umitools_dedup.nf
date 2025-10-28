@@ -18,7 +18,7 @@ process UMITOOLS_DEDUP {
 	
 	script:
 	"""
-	umi_tools dedup -I ${bam} --paired \\
+	umi_tools dedup -I ${bam} \\
 	-S ${sample_id}_${tag}.umidedup.bam -L ${sample_id}_${tag}_umi_dedup.log
 	"""
 }

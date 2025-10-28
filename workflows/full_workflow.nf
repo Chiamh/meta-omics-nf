@@ -313,8 +313,9 @@ workflow FULL {
             // dedupe DMND unaligned reads
             UMITOOLS_CLUST( VSEARCH.out.clusters, 'unaligned' ) 
             // merge pangenome aligned fastq, dmnd aligned fastq and unaligned reads into a new deduplicated fastq
-            PAN_DMND_KRAKEN_FASTQ( UMITOOLS_DEDUP_PANALIGN.out.dedup_bam, UMITOOLS_DEDUP_DMND.out.dedup_bam, UMITOOLS_CLUST.out.readnames, 
-                                   DMND_RNA.out.aligned, ch_rna_decont )
+			// Join channels by sample_id to avoid conflicts
+			ch_pan_dmnd_kraken_fastq_in=UMITOOLS_DEDUP_PANALIGN.out.dedup_bam.join(UMITOOLS_DEDUP_DMND.out.dedup_bam).join(UMITOOLS_CLUST.out.readnames).join(DMND_RNA.out.aligned).join(ch_rna_decont)
+            PAN_DMND_KRAKEN_FASTQ( ch_pan_dmnd_kraken_fastq_in )
             ch_rna_decont = PAN_DMND_KRAKEN_FASTQ.out.merged
             ch_dmnd_rna_aligned=PAN_DMND_KRAKEN_FASTQ.out.dmnd
         } else {
