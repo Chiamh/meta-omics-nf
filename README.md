@@ -11,7 +11,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 
 ## Pipeline summary for metagenomic reads
 1. Adapter trimming and quality control using fastp (0.22.0)
-2. Optional removal of host (human) reads by mapping to a reference genome using bwa (0.7.17) 
+2. Optional removal of host (human) reads by mapping to human transcripts using STAR (2.7.9a) and the human pangenome using vg giraffe (1.63.1) 
 3. Taxonomic classification of non-human reads using Kraken2 (2.1.2) and taxonomic abundance re-estimation using Bracken (2.6.1)
 4. Optional removal of microbial spike-in sequences
 5. Functional annotation of reads by mapping to a microbial gene catalog of choice using bowtie2 (2.4.4)
@@ -19,10 +19,10 @@ This pipeline currently only accepts paired-end reads as inputs.
 7. Annotation of mappable reads into Clusters of Orthologous groups (COGs) using EggNOG mapper (2.1.6)
 
 ## Pipeline summary for metatranscriptomic reads
-1. Adapter trimming and quality control using fastp (0.22.0)
-2. Optional removal of host (human) reads using STAR (2.7.9a), a splice aware aligner.
-3. Optional computational removal of prokaryotic and eukaryotic rRNAs using a k-mer based strategy with bbmap (38.93)
-4. Optional sequence de-duplication using bbmap (38.93) clumpify.sh
+1. UMI extraction, adapter trimming and quality control using fastp (0.22.0)
+2. Optional computational removal of prokaryotic and eukaryotic rRNAs using a k-mer based strategy with bbmap (38.93)
+3. Optional removal of host (human) reads using STAR (2.7.9a), a splice aware aligner
+4. Optional non UMI-aware sequence de-duplication using bbmap (38.93) clumpify.sh OR UMI-aware sequence de-duplication using vsearch (2.30.1) and umitools (1.1.5)
 5. Taxonomic classification of non-human reads using Kraken2 (2.1.2)
 6. Functional annotation of reads by mapping to a microbial gene catalog of choice using bowtie2 (2.4.4)
 7. Functional annotation of unmapped reads in the previous step, to a larger protein database e.g. [UHGP](http://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/human-gut/v1.0/uhgp_catalogue/) or [Uniref90](https://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref90/) using diamond (2.0.12)
@@ -38,7 +38,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 
 3. Clone the pipeline and refer to the help message
 	```sh
-	$ git clone https://github.com/Chiamh/meta-omics-nf
+	$ git clone https://github.com/Chiamh/meta-omics-nf release/v2.0.0
 	
 	$ nextflow run ./meta-omics-nf/main.nf --help
 	```
@@ -51,10 +51,20 @@ This pipeline currently only accepts paired-end reads as inputs.
 	$ chmod +x ./meta-omics-nf/bin/*
 	```
 
-5. Run the pipeline
+5. Run the full workflow
+* The default assumes RNA libraries with 11 nt UMIs in read 1.
+* Add the -bucket-dir argument if running on AWSbatch with S3 support
 	```sh
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	```
+
+* Alternatively, non UMI based de-duplication is possible with -entry nonumi.
+* Add the -bucket-dir argument if running on AWSbatch with S3 support
+	```sh
+	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry nonumi --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
+	```
+
+6. Run partial workflows (Warning: Not yet updated)
 * You can specifiy multiple profiles separated by comma, e.g. -profile docker,sge.
 * The taxonomic classification, nucleotide alignment, translated search and annotation modules can be quite memory intensive depending on the databases used
 * Delete the work/ directory after running the pipeline to free up space taken up by intermediate files
@@ -66,6 +76,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 	
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry classify --rna_reads /path/to/DECONTAMINATED_metatranscriptomes --dna_reads /path/to/DECONTAMINATED_metagenomes --outdir /path/to/results
 	```
+
 ## Input requirements
 Either:
 1. Absolute path to the **folder** containing the DNA and/or RNA reads specified with the --dna_reads and/or --rna_reads arguments. 
@@ -123,8 +134,9 @@ Why is it preferable to perform functional annotations using unpaired despite pa
 ## Updates
 
 * Added more flexible input requirements (Mar 2025)
+* Implemented UMI and non-UMI based workflows (Oct 2025)
 
 	
 ## Contact
 
-Minghao Chia: chia_minghao@gis.a-star.edu.sg, chiaminghao@gmail.com
+Minghao Chia: chia_minghao@a-star.edu.sg, chiaminghao@gmail.com
