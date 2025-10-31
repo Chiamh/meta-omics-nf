@@ -38,7 +38,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 
 3. Clone the pipeline and refer to the help message
 	```sh
-	$ git clone https://github.com/Chiamh/meta-omics-nf release/v2.0.0
+	$ git clone --branch release/v2.0.0 https://github.com/Chiamh/meta-omics-nf
 	
 	$ nextflow run ./meta-omics-nf/main.nf --help
 	```

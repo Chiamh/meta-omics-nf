@@ -218,8 +218,8 @@ if (params.process_rna && params.rna_list){
 	.splitCsv(header: true)
 	.map { row ->
 	// Recursively find files matching the sample name pattern
-	def read1_files = file("${params.rna_reads}/**/*${row.sample_name}*1.{fastq,fq}.gz")
-	def read2_files = file("${params.rna_reads}/**/*${row.sample_name}*2.{fastq,fq}.gz")
+	def read1_files = file("${params.rna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
+	def read2_files = file("${params.rna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
 	// Take the first match (or add validation)
 	tuple(row.id, tuple(read1_files[0], read2_files[0]))
 	}
@@ -234,8 +234,8 @@ if (params.process_dna && params.dna_list){
 	.splitCsv(header: true)
 	.map { row ->
 	// Recursively find files matching the sample name pattern
-	def read1_files = file("${params.rna_reads}/**/*${row.sample_name}*1.{fastq,fq}.gz")
-	def read2_files = file("${params.rna_reads}/**/*${row.sample_name}*2.{fastq,fq}.gz")
+	def read1_files = file("${params.dna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
+	def read2_files = file("${params.dna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
 	// Take the first match (or add validation)
 	tuple(row.id, tuple(read1_files[0], read2_files[0]))
 	}

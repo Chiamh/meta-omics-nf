@@ -13,8 +13,8 @@ process CONCAT_RNA {
 	tuple val(sample_id), path("${sample_id}_merged_1.fastq.gz"), path("${sample_id}_merged_2.fastq.gz")
 	
 	script:
-	def r1_files = reads.findAll { it.name.matches('.*(_R1|_1)\\.(fq|fastq)(\\.gz)?$' }
-	def r2_files = reads.findAll { it.name.matches('.*(_R2|_2)\\.(fq|fastq)(\\.gz)?$' }
+	def r1_files = reads.findAll { it.name.matches('.*(_R1|_1)\\.(fq|fastq)(\\.gz)?$') }
+	def r2_files = reads.findAll { it.name.matches('.*(_R2|_2)\\.(fq|fastq)(\\.gz)?$') }
 	
 	"""
 	echo "Concatenating reads from ${sample_id}"
