@@ -77,6 +77,16 @@ This pipeline currently only accepts paired-end reads as inputs.
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry classify --rna_reads /path/to/DECONTAMINATED_metatranscriptomes --dna_reads /path/to/DECONTAMINATED_metagenomes --outdir /path/to/results
 	```
 
+7. Obtain summary statistics for basic QC
+* For metagenomes, this script returns a tab separated file in the output directory named MGX_QC_stats.tsv
+	```sh
+	$ for i in `cat DNA_library_ids`; do bash ./meta-omics-nf/bin/get_MGX_QC_stats.sh "$i" <PATH TO PIPELINE RESULTS DIRECTORY> <PATH TO OUTPUT DIRECTORY>; done
+	```
+* For metatranscriptomes, this script returns a tab separated file in the output directory named UMI_MTX_QC_stats.tsv
+	```sh
+	$ for i in `cat RNA_library_ids`; do bash ./meta-omics-nf/bin/get_UMI_MTX_QC_stats.sh "$i" <PATH TO PIPELINE RESULTS DIRECTORY> <PATH TO OUTPUT DIRECTORY>; done
+	```
+
 ## Input requirements
 Either:
 1. Absolute path to the **folder** containing the DNA and/or RNA reads specified with the --dna_reads and/or --rna_reads arguments. 
