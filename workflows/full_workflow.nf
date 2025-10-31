@@ -213,20 +213,32 @@ if (!params.spike_in_path && params.rm_spikes){
 */
 
 if (params.process_rna && params.rna_list){
-    Channel
-	.fromPath( params.rna_list )
-	.splitCsv(header:true) //Read in 3 column csv file with the headers: id, read1 and read2
-	.map { row-> tuple(row.id, tuple(file(params.rna_reads + "/" + row.read1,checkIfExists: true), file(params.rna_reads + "/" + row.read2,checkIfExists: true))) }
+	Channel
+	.fromPath(params.rna_list)
+	.splitCsv(header: true)
+	.map { row ->
+	// Recursively find files matching the sample name pattern
+	def read1_files = file("${params.rna_reads}/**/*${row.sample_name}*1.{fastq,fq}.gz")
+	def read2_files = file("${params.rna_reads}/**/*${row.sample_name}*2.{fastq,fq}.gz")
+	// Take the first match (or add validation)
+	tuple(row.id, tuple(read1_files[0], read2_files[0]))
+	}
 	.set{ ch_rna_input }
-} else if (params.process_rna && !params.rna_list){
+	} else if (params.process_rna && !params.rna_list){
 	Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
 }
 
 if (params.process_dna && params.dna_list){
-    Channel
-	.fromPath( params.dna_list )
-	.splitCsv(header:true) //Read in 3 column csv file with the headers: id, read1 and read2
-	.map { row-> tuple(row.id, tuple(file(params.dna_reads + "/" + row.read1,checkIfExists: true), file(params.dna_reads + "/" + row.read2,checkIfExists: true))) }
+	Channel
+	.fromPath(params.dna_list)
+	.splitCsv(header: true)
+	.map { row ->
+	// Recursively find files matching the sample name pattern
+	def read1_files = file("${params.rna_reads}/**/*${row.sample_name}*1.{fastq,fq}.gz")
+	def read2_files = file("${params.rna_reads}/**/*${row.sample_name}*2.{fastq,fq}.gz")
+	// Take the first match (or add validation)
+	tuple(row.id, tuple(read1_files[0], read2_files[0]))
+	}
 	.set{ ch_dna_input }
 } else if (params.process_dna && !params.dna_list){
 	Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
@@ -273,6 +285,7 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 //https://github.com/nextflow-io/patterns/blob/master/docs/conditional-process.adoc
 
 // this main workflow will generate all intermediate files and can be resumed with nextflow
+
 workflow FULL {
     if ( params.process_rna ){
         // 1. Read QC and add umi to headers using fastp
