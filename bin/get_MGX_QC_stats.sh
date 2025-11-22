@@ -66,11 +66,10 @@ PANGENE_ALIGN_READS=`echo $PANGENE_ALIGN_SINGLEMAP + $PANGENE_ALIGN_MULTIMAP| bc
 UNIREF_ALIGN_READS=`grep "queries aligned." $DATADIR/MGX_dmnd_out/"$LIBID"*_dmnd.log | awk '{print $1}'`
 
 #Kraken2 unclassified read count (paired end)
-UNCLASSIFIED=`grep "unclassified$" $DATADIR/kraken2/DNA/"$LIBID"*_kraken2.tax | cut -f 2`
+UNCLASSIFIED=`awk '($5==0){print $2}' $DATADIR/kraken2/DNA/"$LIBID"*_kraken2.tax`
 
-#Kraken2 classified read count (paired end), not necessarily at species level
-
-CLASSIFIED=`grep "root$" $DATADIR/kraken2/DNA/"$LIBID"*_kraken2.tax | cut -f 2`
+#Kraken2 classified read count (paired end), classified to Root, not necessarily at species level
+CLASSIFIED=`awk '($5==1){print $2}' $DATADIR/kraken2/DNA/"$LIBID"*_kraken2.tax`
 
 #Left over reads classified as "Homo sapiens" by kraken2 
 #HUMAN=`grep "Homo sapiens$" $DATADIR/kraken2/DNA/"$LIBID"_merged_kraken2.tax | cut -f2`

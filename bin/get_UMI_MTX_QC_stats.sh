@@ -94,10 +94,10 @@ fi
 #Alignment rates to microbial gene and protein sequences
 
 #Number of read pairs with at least one member of the pair aligning to microbial pangenes, after de-duplication (if enabled). Includes low coverage features.
-PANGENE_ALIGN_READS=`grep "_pan_umi_read_names" $DATADIR/decont/RNA/"$LIBID"*_all_dedup_read_pair_stats.txt | awk '{print $1}'`
+PANGENE_ALIGN_READS=`grep "_pan_umi_read_names" $DATADIR/UMI_dedup_out/RNA/"$LIBID"*_all_dedup_read_pair_stats.txt | awk '{print $1}'`
 
 #Number of read pairs with at least one member of the pair aligning to Uniref90, after de-duplication (if enabled). Includes low coverage features.
-UNIREF_ALIGN_READS=`grep "_dmnd_umi_read_names" $DATADIR/decont/RNA/"$LIBID"*_all_dedup_read_pair_stats.txt | awk '{print $1}'`
+UNIREF_ALIGN_READS=`grep "_dmnd_umi_read_names" $DATADIR/UMI_dedup_out/RNA/"$LIBID"*_all_dedup_read_pair_stats.txt | awk '{print $1}'`
 
 OVERALL_ALIGN_READS=`echo $PANGENE_ALIGN_READS + $UNIREF_ALIGN_READS| bc`
 
