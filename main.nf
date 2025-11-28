@@ -28,41 +28,30 @@ def helpMessage() {
       nextflow run main.nf
       --rna_reads FOLDER_FOR_RNA_READS
       --dna_reads FOLDER_FOR_DNA_READS
-      --bwaidx_path FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX
-      --bwaidx NAME_OF_BWA_INDEX
+      --human_pangenome_path FOLDER_FOR_HUMAN_PANGENOME_INDEX_FILES
       --star_index FOLDER_FOR_STAR_INDEX_FOR_HUMAN_GENOME
       --ribokmers FOLDER_FOR_BBMAP_RIBOKMERS
       --kraken2db FOLDER_FOR_KRAKEN2_AND_BRACKEN_DB
       --pangenome_path FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX
-	  --pangenome	NAME_OF_PANGENOME_BOWTIE2_INDEX
+      --pangenome NAME_OF_PANGENOME_BOWTIE2_INDEX
       --dmnddb PATH_TO_DIAMOND2_DB
     
-	NOTE: A more user-friendly approach is to specify these parameters in a *.config file under a custom profile 
+    NOTE: A more user-friendly approach is to specify these parameters in a *.config file under a custom profile 
 	
-    IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respsectively. 
+    IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respectively. 
     
     The main workflow can take up a lot of disk space with intermediate fastq files. 
-    
-    If this is a problem, the workflow can be run as two separate modules.
-    The decontaminate module removes the intermediate files and is not compatible with nextflow -resume
-    The classify module is still compatible with nextflow -resume because the smaller intemediate files are kept in the nextflow work/ directory
-    The classify module assumes gzipped compressed reads as direct inputs to Kraken2
-    
-    Usage for alternative workflow:
-    nextflow run main.nf -entry decontaminate [args]...
-    nextflow run main.nf -entry classify [args]...
     
     Input and database arguments are null by default.
     Rather than manually specifying the paths to so many databases, it is best to create a custom nextflow config file.
      
     Input arguments:
       --rna_list                    Path to a three column csv file with headers: id,read1,read2 for metatranscriptomic reads. If not defined, workflow will search input folder for all valid input fastq files. 
-	  --dna_list                    Path to a three column csv file with headers: id,read1,read2 for metagenomic reads. If not defined, workflow will search input folder for all valid input fastq files.
-	  --rna_reads                   Path to a folder containing all input metatranscriptomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
+      --dna_list                    Path to a three column csv file with headers: id,read1,read2 for metagenomic reads. If not defined, workflow will search input folder for all valid input fastq files.
+      --rna_reads                   Path to a folder containing all input metatranscriptomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
       --dna_reads                   Path to a folder containing all input metagenomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
     Database arguments:
-      --bwaidx_path                 Path to the folder with host (human) reference genome and bwa index
-      --bwaidx			    Name of the bwa index e.g. hg38.fa
+      --human_pangenome_path        Path to the folder with host (human) pangenome indices built with vg giraffe v1.63.1
       --star_index                  Path to the directory containing the index for the human genome for STAR aligner
       --ribokmers                   Path to the eukaryotic and prokaryotic ribokmer database for computational rRNA removal using BBmap
       --kraken2db                   Path to the Kraken2 and Bracken databases
@@ -74,16 +63,16 @@ def helpMessage() {
       --uniref90_fasta              Path to fasta file containing amino acid sequences from Uniref90
       --uniref90_GO                 Path to two column .tsv file derived from https://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/idmapping/idmapping_selected.tab.gz
       --pangenome_annots            Path to pre-computed eggnog annotations for pangenome
-      --spike_in_path		    Path to file denoting genera/species to remove from metagenomes before functional profiling, because they are spike-ins
+      --spike_in_path               Path to file denoting genera/species to remove from metagenomes before functional profiling, because they are spike-ins
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
-      -entry                        Can be one of [decontaminate, classify]. For disk space saving workflows. Note SINGLE dash.
+      -entry                        Can be one of [nonumi, classify, concatenate]. Note SINGLE dash.
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
-	  --dedupe						Perform de-duplication using clumpify.sh for RNA reads [Default: true]
-	  --remove_rRNA					Perform computational rRNA removal [Default: true]
+      --dedupe                      Perform de-duplication using clumpify.sh for RNA reads [Default: true]
+      --remove_rRNA                 Perform computational rRNA removal [Default: true]
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]
@@ -96,7 +85,7 @@ def helpMessage() {
       --awsregion                   The AWS Region for your AWS Batch job to run on [Default: false]
       --awsqueue                    The AWS queue for your AWS Batch job to run on [Default: false]
     Others:
-      --help		            Display this help message
+      --help                        Display this help message
     """
 }
 
@@ -113,7 +102,7 @@ if (params.help){
 */
 
 include { FULL } from './workflows/full_workflow.nf'
-include { DECONT } from './workflows/decont.nf'
+include { NONUMI } from './workflows/non_umi_workflow.nf'
 include { PROFILE } from './workflows/classify.nf'
 include { CONCATENATE } from './workflows/concatenate.nf'
 
@@ -123,18 +112,19 @@ include { CONCATENATE } from './workflows/concatenate.nf'
 ========================================================================================
 */
 
-// this main workflow will generate all intermediate files and can be resumed with nextflow
+// this main workflow will generate all intermediate files and can be resumed with nextflow. 
+// The full workflow  works with UMI-based deduplication using a kit like NEBNext Unique Dual Index UMI Adaptors, where the 12 nt UMIs are in read 1
 workflow {
     
     FULL ()
      
 }
 
-//modular named workflows to reduce intermediate file size. 
-//warning: the decontaminate named workflow is not compatible with nextflow -resume because intermediate files are deleted to save space
-workflow decontaminate {
+//Alternative named workflows.
+// This is the workflow that uses a different logic for non UMI based de-duplication
+workflow nonumi {
     
-    DECONT ()
+    NONUMI ()
 }
 
 // This classify workflow can be resumed with nextflow
@@ -144,7 +134,7 @@ workflow classify {
     
     PROFILE ()
 }
-// Use the concatenate workflow to join fastq files across different lanes by libid. Specify path to raw reads with --rna_reads and/or --dna_reads
+// Use the concatenate workflow to join fastq files across different lanes by library IDs. Specify path to raw reads with --rna_reads and/or --dna_reads
 workflow concatenate {
 
     CONCATENATE ()

@@ -19,9 +19,7 @@ process TRF_TAXA_RNA {
 	script:
 
 	"""
-	
-	transfer_taxa_helper.sh "${sample_id}" "${pangenome_annots}"
-
+	transfer_taxa_rna_helper.sh "${sample_id}" "${panalign_bam}" "${pangenome_annots}"
 	"""
 }
  

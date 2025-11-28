@@ -10,18 +10,19 @@ process CONCAT_RNA {
 	tuple val(sample_id), path(reads)
 	
 	output:
-	path("${sample_id}_merged_{1,2}.fastq.gz")
+	tuple val(sample_id), path("${sample_id}_merged_1.fastq.gz"), path("${sample_id}_merged_2.fastq.gz")
 	
 	script:
+	def r1_files = reads.findAll { it.name.matches('.*(_R1|_1)\\.(fq|fastq)(\\.gz)?$') }
+	def r2_files = reads.findAll { it.name.matches('.*(_R2|_2)\\.(fq|fastq)(\\.gz)?$') }
+	
 	"""
-	echo concatenating reads from "${sample_id}"
+	echo "Concatenating reads from ${sample_id}"
 	
-	cat "${sample_id}"*1.{fq,fastq}.gz > "${sample_id}_merged_1.fastq.gz"
+	cat ${r1_files.join(' ')} > "${sample_id}_merged_1.fastq.gz"
 	
-	cat "${sample_id}"*2.{fq,fastq}.gz > "${sample_id}_merged_2.fastq.gz"
-	
-	echo finished processing "${sample_id}"
-	
+	cat ${r2_files.join(' ')} > "${sample_id}_merged_2.fastq.gz"
+	echo "Finished processing ${sample_id}"
 	"""
 
 }

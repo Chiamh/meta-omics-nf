@@ -16,66 +16,55 @@ def helpMessage() {
       nextflow run main.nf
       --rna_reads FOLDER_FOR_RNA_READS
       --dna_reads FOLDER_FOR_DNA_READS
-      --bwaidx_path FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX
-      --bwaidx NAME_OF_BWA_INDEX
+      --human_pangenome_path FOLDER_FOR_HUMAN_PANGENOME_INDEX_FILES
       --star_index FOLDER_FOR_STAR_INDEX_FOR_HUMAN_GENOME
       --ribokmers FOLDER_FOR_BBMAP_RIBOKMERS
       --kraken2db FOLDER_FOR_KRAKEN2_AND_BRACKEN_DB
       --pangenome_path FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX
-	  --pangenome	NAME_OF_PANGENOME_BOWTIE2_INDEX
+      --pangenome NAME_OF_PANGENOME_BOWTIE2_INDEX
       --dmnddb PATH_TO_DIAMOND2_DB
     
-	NOTE: A more user-friendly approach is to specify these parameters in a *.config file under a custom profile 
+    NOTE: A more user-friendly approach is to specify these parameters in a *.config file under a custom profile 
 	
-    IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respsectively. 
+    IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respectively. 
     
     The main workflow can take up a lot of disk space with intermediate fastq files. 
-    
-    If this is a problem, the workflow can be run as two separate modules.
-    The decontaminate module removes the intermediate files and is not compatible with nextflow -resume
-    The classify module is still compatible with nextflow -resume because the smaller intemediate files are kept in the nextflow work/ directory
-    The classify module assumes gzipped compressed reads as direct inputs to Kraken2
-    
-    Usage for alternative workflow:
-    nextflow run main.nf -entry decontaminate [args]...
-    nextflow run main.nf -entry classify [args]...
     
     Input and database arguments are null by default.
     Rather than manually specifying the paths to so many databases, it is best to create a custom nextflow config file.
      
     Input arguments:
       --rna_list                    Path to a three column csv file with headers: id,read1,read2 for metatranscriptomic reads. If not defined, workflow will search input folder for all valid input fastq files. 
-	  --dna_list                    Path to a three column csv file with headers: id,read1,read2 for metagenomic reads. If not defined, workflow will search input folder for all valid input fastq files.
-	  --rna_reads                   Path to a folder containing all input metatranscriptomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
+      --dna_list                    Path to a three column csv file with headers: id,read1,read2 for metagenomic reads. If not defined, workflow will search input folder for all valid input fastq files.
+      --rna_reads                   Path to a folder containing all input metatranscriptomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
       --dna_reads                   Path to a folder containing all input metagenomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
     Database arguments:
-      --bwaidx_path                 Path to the folder with host (human) reference genome and bwa index
-      --bwaidx			    Name of the bwa index e.g. hg38.fa
+      --human_pangenome_path        Path to the folder with host (human) pangenome indices built with vg giraffe v1.63.1
       --star_index                  Path to the directory containing the index for the human genome for STAR aligner
       --ribokmers                   Path to the eukaryotic and prokaryotic ribokmer database for computational rRNA removal using BBmap
       --kraken2db                   Path to the Kraken2 and Bracken databases
       --pangenome_path              Path to the folder with bowtie2 index for custom-built microbial pangenome/gene catalog
       --pangenome                   Name of the bowtie2 index for the pangenome/gene catalog e.g. IHSMGC
       --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)
-      --eggnog_db		    Path to folder containing the eggnog database
-      --eggnog_OG_annots	    Path to a pre-built e5.og_annotations.tsv file, downloaded from http://eggnog5.embl.de/download/eggnog_5.0, sorted by EGGNOG ID
+      --eggnog_db                   Path to folder containing the eggnog database
+      --eggnog_OG_annots            Path to a pre-built e5.og_annotations.tsv file, downloaded from http://eggnog5.embl.de/download/eggnog_5.0, sorted by EGGNOG ID
       --uniref90_fasta              Path to fasta file containing amino acid sequences from Uniref90
       --uniref90_GO                 Path to two column .tsv file derived from https://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/idmapping/idmapping_selected.tab.gz
       --pangenome_annots            Path to pre-computed eggnog annotations for pangenome
-      --spike_in_path		    Path to file denoting genera/species to remove from metagenomes before functional profiling, because they are spike-ins
+      --spike_in_path               Path to file denoting genera/species to remove from metagenomes before functional profiling, because they are spike-ins
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
-      -entry                        Can be one of [decontaminate, classify]. For disk space saving workflows. Note SINGLE dash.
+      -entry                        Can be one of [nonumi, classify, concatenate]. Note SINGLE dash.
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
-	  --dedupe						Perform de-duplication using clumpify.sh for RNA reads [Default: true]
-	  --remove_rRNA					Perform computational rRNA removal [Default: true]
+      --dedupe                      Perform de-duplication using clumpify.sh for RNA reads [Default: true]
+      --remove_rRNA                 Perform computational rRNA removal [Default: true]
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]
-      --rm_spikes		    Removes spike in sequences from metagenomes [Default: true]
+      --rm_spikes                   Removes spike in sequences from metagenomes [Default: true]
       --annotate_off                Skip functional annotation using Eggnog and Uniref90 [Default: false]
     Output arguments:
       --outdir                      The output directory where the results will be saved [Default: ./pipeline_results]
@@ -84,7 +73,7 @@ def helpMessage() {
       --awsregion                   The AWS Region for your AWS Batch job to run on [Default: false]
       --awsqueue                    The AWS queue for your AWS Batch job to run on [Default: false]
     Others:
-      --help		            Display this help message
+      --help                        Display this help message
     """
 }
 
@@ -120,18 +109,18 @@ if (!params.dna_reads && params.process_dna){
 }
 
 
-if (!params.bwaidx_path && !params.decont_off && params.process_dna){
+if (!params.human_pangenome_path && !params.decont_off && params.process_dna){
     helpMessage()
     log.info"""
-    [Error] --bwaidx_path is required for removal of host (human) reads from metagenomic sequences (decontamination step)
+    [Error] --human_pangenome_path is required for removal of host (human) reads from metagenomic sequences (decontamination step)
     """.stripIndent()
     exit 0
 }
 
-if (!params.star_index && !params.decont_off && params.process_rna){
+if (!params.star_index && !params.decont_off){
     helpMessage()
     log.info"""
-    [Error] --star_index is required for removal of host (human) reads from metatranscriptomic sequences (decontamination step)
+    [Error] --star_index is required for removal of host (human) reads (decontamination step)
     """.stripIndent()
     exit 0
 }
@@ -224,20 +213,32 @@ if (!params.spike_in_path && params.rm_spikes){
 */
 
 if (params.process_rna && params.rna_list){
-    Channel
-	.fromPath( params.rna_list )
-	.splitCsv(header:true) //Read in 3 column csv file with the headers: id, read1 and read2
-	.map { row-> tuple(row.id, tuple(file(params.rna_reads + "/" + row.read1,checkIfExists: true), file(params.rna_reads + "/" + row.read2,checkIfExists: true))) }
+	Channel
+	.fromPath(params.rna_list)
+	.splitCsv(header: true)
+	.map { row ->
+	// Recursively find files matching the sample name pattern
+	def read1_files = file("${params.rna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
+	def read2_files = file("${params.rna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
+	// Take the first match (or add validation)
+	tuple(row.id, tuple(read1_files[0], read2_files[0]))
+	}
 	.set{ ch_rna_input }
-} else if (params.process_rna && !params.rna_list){
+	} else if (params.process_rna && !params.rna_list){
 	Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
 }
 
 if (params.process_dna && params.dna_list){
-    Channel
-	.fromPath( params.dna_list )
-	.splitCsv(header:true) //Read in 3 column csv file with the headers: id, read1 and read2
-	.map { row-> tuple(row.id, tuple(file(params.dna_reads + "/" + row.read1,checkIfExists: true), file(params.dna_reads + "/" + row.read2,checkIfExists: true))) }
+	Channel
+	.fromPath(params.dna_list)
+	.splitCsv(header: true)
+	.map { row ->
+	// Recursively find files matching the sample name pattern
+	def read1_files = file("${params.dna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
+	def read2_files = file("${params.dna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
+	// Take the first match (or add validation)
+	tuple(row.id, tuple(read1_files[0], read2_files[0]))
+	}
 	.set{ ch_dna_input }
 } else if (params.process_dna && !params.dna_list){
 	Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
@@ -249,19 +250,24 @@ if (params.process_dna && params.dna_list){
     Include modules
 ========================================================================================
 */
-
-include { FASTP } from '../modules/fastp.nf'
+include { FASTP_UMI } from '../modules/fastp_umi.nf'
+include { STAR } from '../modules/star.nf'
 include { RIBOFILTER } from '../modules/rRNAfilter.nf'
-include { DEDUP } from '../modules/dedup.nf'
+include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_PANALIGN } from '../modules/umitools_dedup.nf'
+include { UMITOOLS_DEDUP as UMITOOLS_DEDUP_DMND } from '../modules/umitools_dedup.nf'
+include { UMITOOLS_CLUST } from '../modules/umitools_clust.nf'
+include { PAN_DMND_KRAKEN_FASTQ } from '../modules/pan_dmnd_kraken_fastq.nf'
 include { KRAKEN2_RNA } from '../modules/kraken_rna.nf'
 include { KRAKEN2_DNA } from '../modules/kraken_dna.nf'
 include { BRACKEN } from '../modules/bracken.nf'
 include { PANALIGN_RNA } from '../modules/panalign_rna.nf'
 include { PANALIGN_DNA } from '../modules/panalign_dna.nf'
 include { PANALIGN_DNA_SPIKES } from '../modules/panalign_dna_spikes.nf'
+include { VSEARCH } from '../modules/vsearch_unaligned.nf'
 include { DMND_RNA } from '../modules/dmnd_rna.nf'
 include { DMND_DNA } from '../modules/dmnd_dna.nf'
 include { DECONT_DNA } from '../modules/decont_dna.nf'
+include { DECONT_DNA_PANALIGN } from '../modules/decont_dna_panalign.nf'
 include { ANNOT_DMND_RNA } from '../modules/annot_dmnd_rna.nf'
 include { ANNOT_DMND_DNA } from '../modules/annot_dmnd_dna.nf'
 include { ANNOT_PAN_RNA } from '../modules/annot_pan_rna.nf'
@@ -279,79 +285,99 @@ include { TRF_TAXA_RNA } from '../modules/transfer_taxa_rna.nf'
 //https://github.com/nextflow-io/patterns/blob/master/docs/conditional-process.adoc
 
 // this main workflow will generate all intermediate files and can be resumed with nextflow
+
 workflow FULL {
     if ( params.process_rna ){
-        
-	if ( !params.decont_off ){
-		FASTP(params.star_index, ch_rna_input)
-		ch_rna_microbes = FASTP.out.microbereads
-	} else if ( params.decont_off ){
-		ch_rna_microbes = ch_rna_input
-	}
-		
-	
-	if ( params.remove_rRNA ){
-		RIBOFILTER(params.ribokmers, ch_rna_microbes)
-	}
-	
-	if ( params.remove_rRNA && params.dedupe ){
-        DEDUP(RIBOFILTER.out.reads)
-	} else if ( !params.remove_rRNA && params.dedupe ){
-		DEDUP(ch_rna_microbes)
-	}
-        
-        if ( params.decont_off && !params.dedupe && !params.remove_rRNA ) {
-            ch_rna_decont = ch_rna_input
-        } else if ( params.dedupe ){
-            ch_rna_decont = DEDUP.out.reads
-            } else if ( !params.dedupe && params.remove_rRNA ){
-            ch_rna_decont = RIBOFILTER.out.reads
-				} else if ( !params.decont_off && !params.dedupe && !params.remove_rRNA ){
-					ch_rna_decont = FASTP.out.microbereads
-					}
-        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
-        PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
-        DMND_RNA(params.dmnddb, PANALIGN_RNA.out.unaligned)
-	ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_RNA.out.aligned)
-	ANNOT_PAN_RNA(params.pangenome_annots, PANALIGN_RNA.out.coverage)
+        // 1. Read QC and add umi to headers using fastp
+        FASTP_UMI( ch_rna_input )
+        ch_rna_input = FASTP_UMI.out.reads
 
-	ch_trf_taxa_rna_in=KRAKEN2_RNA.out.k2out.join(PANALIGN_RNA.out.aligned).join(DMND_RNA.out.aligned).join(DMND_RNA.out.unaligned)
-	TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
+        // 2. remove human host RNA and 3. remove rRNAs
+        if ( params.decont_off ){
+            if ( params.remove_rRNA ){
+                RIBOFILTER(params.ribokmers, ch_rna_input)
+                ch_rna_decont = RIBOFILTER.out.reads
+            } else {
+                ch_rna_decont = ch_rna_input
+            }
+        } else {
+            STAR(params.star_index, ch_rna_input)
+            if ( params.remove_rRNA ){
+                RIBOFILTER(params.ribokmers, STAR.out.microbereads)
+                ch_rna_decont = RIBOFILTER.out.reads
+            } else {
+                ch_rna_decont = STAR.out.microbereads
+            }
+        }
+
+        // 4. Panalign to pangenome IHSMGC database
+        PANALIGN_RNA(params.pangenome_path, ch_rna_decont)
+        // 5. Translated annotation - sam format -> outfmt 101
+        DMND_RNA(params.dmnddb, params.dmndfai, PANALIGN_RNA.out.unaligned) //need to add samtools to docker container
+        // 6. Cluster reads that failed to align in steps 4 and 5 using Vsearch
+        VSEARCH(DMND_RNA.out.unaligned)
+
+        if ( params.dedupe ){
+            // dedupe PANALIGN aligned reads
+            UMITOOLS_DEDUP_PANALIGN( PANALIGN_RNA.out.aligned, 'pan' )
+            ch_pan_rna_aligned = UMITOOLS_DEDUP_PANALIGN.out.dedup_bam
+            // dedupe PANALIGN unaligned but DMND aligned reads
+            UMITOOLS_DEDUP_DMND( DMND_RNA.out.bam, 'uniref90' )
+            // dedupe DMND unaligned reads
+            UMITOOLS_CLUST( VSEARCH.out.clusters, 'unaligned' ) 
+            // merge pangenome aligned fastq, dmnd aligned fastq and unaligned reads into a new deduplicated fastq
+            // Join channels by sample_id to avoid conflicts
+            ch_pan_dmnd_kraken_fastq_in=UMITOOLS_DEDUP_PANALIGN.out.dedup_bam.join(UMITOOLS_DEDUP_DMND.out.dedup_bam).join(UMITOOLS_CLUST.out.readnames).join(DMND_RNA.out.aligned).join(ch_rna_decont)
+            PAN_DMND_KRAKEN_FASTQ( ch_pan_dmnd_kraken_fastq_in )
+            ch_rna_decont = PAN_DMND_KRAKEN_FASTQ.out.merged
+            ch_dmnd_rna_aligned=PAN_DMND_KRAKEN_FASTQ.out.dmnd
+        } else {
+            PANALIGN_RNA.out.aligned
+                .map { it ->[ it[0], it[1] ] }
+                .set { ch_pan_rna_aligned }
+            ch_dmnd_rna_aligned=DMND_RNA.out.aligned
+        }
+        KRAKEN2_RNA(params.kraken2db, ch_rna_decont)
+        ch_kraken2_k2out=KRAKEN2_RNA.out.k2out
+        
+        ANNOT_DMND_RNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, ch_dmnd_rna_aligned)
+        ANNOT_PAN_RNA(params.pangenome_annots, ch_pan_rna_aligned )
+
+        ch_trf_taxa_rna_in=ch_kraken2_k2out.join(ch_pan_rna_aligned).join(ch_dmnd_rna_aligned).join(DMND_RNA.out.unaligned)
+        TRF_TAXA_RNA(params.pangenome_annots, ch_trf_taxa_rna_in)
     }
     
     if ( params.process_dna ){
-        DECONT_DNA(params.bwaidx_path, ch_dna_input)
         
         if ( params.decont_off ) {
             ch_dna_decont = ch_dna_input
-        } else if ( !params.decont_off ) {
-            ch_dna_decont = DECONT_DNA.out.reads
+        } else {
+            DECONT_DNA(params.star_index, ch_dna_input)
+            DECONT_DNA_PANALIGN(params.human_pangenome_path, DECONT_DNA.out.reads)
+            ch_dna_decont = DECONT_DNA_PANALIGN.out.reads
         }
-        
+
         KRAKEN2_DNA(params.kraken2db, ch_dna_decont)
         BRACKEN(params.kraken2db, params.readlength, KRAKEN2_DNA.out.k2tax)
 
-	if ( params.rm_spikes ){
+        if ( params.rm_spikes ){
+            ch_panalign_dna_in = ch_dna_decont.join(KRAKEN2_DNA.out.k2out)
+            PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
+            ch_pan_dna_aligned = PANALIGN_DNA_SPIKES.out.aligned
+            ch_pan_dna_unaligned = PANALIGN_DNA_SPIKES.out.unaligned
+            ch_pan_dna_coverage = PANALIGN_DNA_SPIKES.out.coverage
+        } else {
+            PANALIGN_DNA(params.pangenome_path, ch_dna_decont)
+            ch_pan_dna_aligned = PANALIGN_DNA.out.aligned
+            ch_pan_dna_unaligned = PANALIGN_DNA.out.unaligned
+            ch_pan_dna_coverage = PANALIGN_DNA.out.coverage
+        }
+        DMND_DNA(params.dmnddb, ch_pan_dna_unaligned)
 
-	ch_panalign_dna_in=ch_dna_decont.join(KRAKEN2_DNA.out.k2out)
+        ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
+        ANNOT_PAN_DNA(params.pangenome_annots, ch_pan_dna_coverage)
 
-	PANALIGN_DNA_SPIKES(params.pangenome_path, params.spike_in_path, ch_panalign_dna_in)
-	DMND_DNA(params.dmnddb, PANALIGN_DNA_SPIKES.out.unaligned)
-	ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
-	ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA_SPIKES.out.coverage)
-
-	ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA_SPIKES.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
-
-	TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
-	} else if ( !params.rm_spikes ){
-	PANALIGN_DNA(params.pangenome_path, ch_dna_decont)
-	DMND_DNA(params.dmnddb, PANALIGN_DNA.out.unaligned)
-	ANNOT_DMND_DNA(params.uniref90_fasta, params.eggnog_OG_annots, params.eggnog_db, params.uniref90_GO, DMND_DNA.out.aligned)
-	ANNOT_PAN_DNA(params.pangenome_annots, PANALIGN_DNA.out.coverage)
-
-	ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(PANALIGN_DNA.out.aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
-
-	TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
-	}	
+        ch_trf_taxa_dna_in=KRAKEN2_DNA.out.k2out.join(ch_pan_dna_aligned).join(DMND_DNA.out.aligned).join(DMND_DNA.out.unaligned)
+        TRF_TAXA_DNA(params.pangenome_annots, ch_trf_taxa_dna_in)
     }  
 }

@@ -7,9 +7,10 @@ process ANNOT_PAN_RNA {
 	
 	input:
 	path pangenome_annots
-	tuple val(sample_id), path(panalign_results)
+	tuple val(sample_id), path(bam)
 	
 	output:
+	tuple val(sample_id), path("${sample_id}*_cov.tsv"), emit: coverage
 	tuple val(sample_id), path("${sample_id}_panalign_annot.tsv"), emit: results
 	
 	when:
@@ -18,9 +19,9 @@ process ANNOT_PAN_RNA {
 	script:
 
 	"""
+	panalign_rna_helper.sh "${bam}"
 	
-	annot_pan_helper.sh "${sample_id}" "${pangenome_annots}"
-	
+	annot_pan_rna_helper.sh "${sample_id}" "${bam}" "${pangenome_annots}"
 	"""
 }
  
