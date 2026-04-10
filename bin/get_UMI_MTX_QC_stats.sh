@@ -12,7 +12,7 @@ OUTDIR=$3
 
 if [[ ! -e "$OUTDIR"/UMI_MTX_QC_stats.txt ]]; then
     touch "$OUTDIR"/UMI_MTX_QC_stats.txt
-	echo -e "LIBID\tBEFORE_FASTP\tAFTER_FASTP\tDUP_RATE\tAFT_HUMAN_RM\tAFT_RIBO_RM\tBT2_READS_START\tAFT_DEDUP\tPANGENE_ALIGN_READ_PAIRS\tUNIREF_ALIGN_READ_PAIRS\tOVERALL_ANNOT_RATE\tK2_UNCLASSIFIED\tK2_CLASSIFIED\tMICROBE_COUNT\tBACTERIA\tARCHAEA\tFUNGI\tVIRUS" > "$OUTDIR"/UMI_MTX_QC_stats.txt
+	echo -e "LIBID\tBEFORE_FASTP\tAFTER_FASTP\tDUP_RATE\tAFT_HUMAN_RM\tAFT_RIBO_RM\tAFT_DEDUP\tPANGENE_ALIGN_READ_PAIRS\tUNIREF_ALIGN_READ_PAIRS\tOVERALL_ANNOT_RATE\tK2_UNCLASSIFIED\tK2_CLASSIFIED\tMICROBE_COUNT\tBACTERIA\tARCHAEA\tFUNGI\tVIRUS" > "$OUTDIR"/UMI_MTX_QC_stats.txt
 fi
 
 echo "Processing $1"
@@ -53,28 +53,16 @@ AFT_HG_MAP_F=
 fi
 
 #reads matching rRNAs
-RIBORNA_COUNT=`grep "#Matched" $DATADIR/decont/RNA/"$LIBID"*_rRNAfilter.log | cut -f 2`
+#RIBORNA_COUNT=`grep "#Matched" $DATADIR/decont/RNA/"$LIBID"*_rRNAfilter.log | cut -f 2`
 
-#Counts after removal of rRNAs
-AFT_RIBORNA=`echo "$AFT_HG_MAP - $RIBORNA_COUNT" | bc`
+#Counts after removal of rRNAs. Same as the reads entering bowtie2 for pangene alignment, before de-duplication
+AFT_RIBORNA=`grep "were unpaired" $DATADIR/MTX_panalign_out/"$LIBID"*_bt2.log | sed 's/^ *//g' | cut -d ' ' -f 1`
 
 if [[ ! -z "$AFT_RIBORNA" ]]; then
 AFT_RIBORNA_F=`echo $AFT_RIBORNA / 2| bc`
 else
 #empty value
 AFT_RIBORNA_F=
-fi
-
-
-#Unpaired Reads entering bowtie2 for pangene alignment, before de-duplication
-BT_START=`grep "were unpaired" $DATADIR/MTX_panalign_out/"$LIBID"*_bt2.log | sed 's/^ *//g' | cut -d ' ' -f 1`
-
-#Convert to number of paired reads
-if [[ ! -z "$BT_START" ]]; then
-BT_START_F=`echo $BT_START / 2| bc`
-else
-#empty value
-BT_START_F=
 fi
 
 #Kraken2 unclassified read count (paired end)
@@ -142,4 +130,4 @@ MICROBE_COUNT=`echo "$FUNGI + $BACTERIA + $ARCHAEA + $VIRUS" | bc`
 
 #Outputs
 #echo is needed for printing in new line
-echo -e "$LIBID\t$BEFORE_FASTP_F\t$AFT_FASTP_F\t$DUP\t$AFT_HG_MAP_F\t$AFT_RIBORNA_F\t$BT_START_F\t$AFT_DEDUP_F\t$PANGENE_ALIGN_READS\t$UNIREF_ALIGN_READS\t$OVERALL_ALIGN_RATE\t$UNCLASSIFIED\t$CLASSIFIED\t$MICROBE_COUNT\t$BACTERIA\t$ARCHAEA\t$FUNGI\t$VIRUS" >> "$OUTDIR"/UMI_MTX_QC_stats.txt
+echo -e "$LIBID\t$BEFORE_FASTP_F\t$AFT_FASTP_F\t$DUP\t$AFT_HG_MAP_F\t$AFT_RIBORNA_F\t$AFT_DEDUP_F\t$PANGENE_ALIGN_READS\t$UNIREF_ALIGN_READS\t$OVERALL_ALIGN_RATE\t$UNCLASSIFIED\t$CLASSIFIED\t$MICROBE_COUNT\t$BACTERIA\t$ARCHAEA\t$FUNGI\t$VIRUS" >> "$OUTDIR"/UMI_MTX_QC_stats.txt
