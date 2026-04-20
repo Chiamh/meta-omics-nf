@@ -67,7 +67,7 @@ def helpMessage() {
     Bracken options:
       --readlength                  Length of Bracken k-mers to use [default: 150]
     Workflow options:
-      -entry                        Can be one of [nonumi, classify, concatenate]. Note SINGLE dash.
+      -entry                        Can be one of [nonumi, decontaminate, concatenate]. Note SINGLE dash.
       --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
       --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
       --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
@@ -103,7 +103,7 @@ if (params.help){
 
 include { FULL } from './workflows/full_workflow.nf'
 include { NONUMI } from './workflows/non_umi_workflow.nf'
-include { PROFILE } from './workflows/classify.nf'
+include { DECONT } from './workflows/decont.nf'
 include { CONCATENATE } from './workflows/concatenate.nf'
 
 /*
@@ -127,12 +127,11 @@ workflow nonumi {
     NONUMI ()
 }
 
-// This classify workflow can be resumed with nextflow
-// Typical use is to specify the path to already decontaminated reads with --rna_reads and/or --dna_reads
+// To output decontaminated (host-removed) reads with --rna_reads and/or --dna_reads
 // Assumes gzipped compressed reads
-workflow classify {
+workflow decontaminate {
     
-    PROFILE ()
+    DECONT ()
 }
 // Use the concatenate workflow to join fastq files across different lanes by library IDs. Specify path to raw reads with --rna_reads and/or --dna_reads
 workflow concatenate {

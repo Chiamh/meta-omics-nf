@@ -58,6 +58,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 5. Run the full workflow
 * The default assumes RNA libraries with 11 nt UMIs in read 1.
 * Add the -bucket-dir argument if running on AWSbatch with S3 support
+* There is flexibility to turn off modules in the full workflow. Relevant options are --decont_off, --dedupe, --remove_rRNA, --profilers_off, --panalign_off, --diamond_off, --annotate_off. See help message for full details.
 	```sh
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	```
@@ -68,17 +69,15 @@ This pipeline currently only accepts paired-end reads as inputs.
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry nonumi --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	```
 
-6. Run partial workflows (Warning: DEPRECATED)
+6. Run partial workflows 
 * You can specifiy multiple profiles separated by comma, e.g. -profile docker,sge.
-* The taxonomic classification, nucleotide alignment, translated search and annotation modules can be quite memory intensive depending on the databases used
-* Delete the work/ directory after running the pipeline to free up space taken up by intermediate files
-* There are modular workflows (decontaminate and classify) to reduce the size of intermediate files produced by the pipeline. See the help message for more details.
-* There is a concatenate workflow (-entry concatenate) to merge fastq.gz files across lanes for the same sample ID.
-* You have the flexibility to turn off DNA spike in removal and/or the eggNOG annotation modules. See the help message for more details
+* There are modular workflows (decontaminate and concatenate) See the help message for more details.
+* Use the decontaminate workflow if you only want to remove human and rRNA reads from fastq files. No UMI-deduplication will be done here.
+* Use the concatenate workflow (-entry concatenate) to merge fastq.gz files across lanes for the same sample ID.
 	```sh
 	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry decontaminate --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	
-	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry classify --rna_reads /path/to/DECONTAMINATED_metatranscriptomes --dna_reads /path/to/DECONTAMINATED_metagenomes --outdir /path/to/results
+	$ nextflow run ./meta-omics-nf/main.nf -profile docker,your_profile -entry concatenate --rna_reads /path/to/metatranscriptomes --dna_reads /path/to/metagenomes --outdir /path/to/results
 	```
 
 7. Obtain summary statistics for basic QC
@@ -98,7 +97,7 @@ Either:
 or:  
 2. Absolute path to the **folder** containing the DNA and/or RNA reads specified with the --dna_reads and/or --rna_reads arguments **and** csv files specified with the --rna_list and --dna_list arguments.
 * The csv file only has one column with a header "id". It corresponds to the library ID shared with read 1 and read 2 respectively.
-<img src='/docs/input_csv_example.PNG' width='150'>
+<img src='/docs/input_csv_example.PNG' width='120'>
 
 * This will run the pipeline on the files specified in the --rna_list and/or --dna_list only. 
 * These input lists are ignored by the "concatenate" workflow by design. 
