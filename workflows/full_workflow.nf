@@ -64,7 +64,7 @@ def helpMessage() {
       --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
       --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
       --diamond_off                 Skip translated search with Diamond [Default: false]
-      --rm_spikes                   Removes spike in sequences from metagenomes [Default: true]
+      --rm_spikes                   Removes spike in sequences from metagenomes [Default: false]
       --annotate_off                Skip functional annotation using Eggnog and Uniref90 [Default: false]
     Output arguments:
       --outdir                      The output directory where the results will be saved [Default: ./pipeline_results]

@@ -98,7 +98,7 @@ Either:
 or:  
 2. Absolute path to the **folder** containing the DNA and/or RNA reads specified with the --dna_reads and/or --rna_reads arguments **and** csv files specified with the --rna_list and --dna_list arguments.
 * The csv file only has one column with a header "id". It corresponds to the library ID shared with read 1 and read 2 respectively.
-<img src='/docs/input_csv_example.PNG' width='200'>
+<img src='/docs/input_csv_example.PNG' width='150'>
 
 * This will run the pipeline on the files specified in the --rna_list and/or --dna_list only. 
 * These input lists are ignored by the "concatenate" workflow by design. 
