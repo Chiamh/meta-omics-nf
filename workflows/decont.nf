@@ -142,6 +142,7 @@ if (params.process_dna){
             ch_dna_decont = DECONT_DNA_PANALIGN.out.reads
         }
 }
+}
 
 
 
