@@ -38,7 +38,7 @@ This pipeline currently only accepts paired-end reads as inputs.
 
 1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`) and add the nextflow executable to your $PATH
 
-2. Install [`Docker`](https://docs.docker.com/engine/installation/)   
+2. Install [`Docker`](https://docs.docker.com/engine/installation/), download and extract requisite [`databases`](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XDPQIZ)  
 
 3. Clone the pipeline and refer to the help message
 	```sh
