@@ -1,100 +1,3 @@
-/*
-========================================================================================
-    Help messages and warnings
-========================================================================================
-*/
-
-//https://www.baeldung.com/groovy-def-keyword
-//https://www.nextflow.io/blog/2020/cli-docs-release.html
-
-def helpMessage() {
-  // adapted from nf-core
-    log.info"""
-    
-    Usage for main workflow:
-    The typical command for running the pipeline is as follows:
-      nextflow run main.nf
-      --rna_reads FOLDER_FOR_RNA_READS
-      --dna_reads FOLDER_FOR_DNA_READS
-      --bwaidx_path FOLDER_FOR_HUMAN_GENOME_AND_BWA_INDEX
-      --bwaidx NAME_OF_BWA_INDEX
-      --star_index FOLDER_FOR_STAR_INDEX_FOR_HUMAN_GENOME
-      --ribokmers FOLDER_FOR_BBMAP_RIBOKMERS
-      --kraken2db FOLDER_FOR_KRAKEN2_AND_BRACKEN_DB
-      --pangenome_path FOLDER_FOR_PANGENOME_AND_BOWTIE2_INDEX
-	  --pangenome	NAME_OF_PANGENOME_BOWTIE2_INDEX
-      --dmnddb PATH_TO_DIAMOND2_DB
-    
-	NOTE: A more user-friendly approach is to specify these parameters in a *.config file under a custom profile 
-	
-    IMPT: Set either the --process_rna or --process_dna arguments to false if no RNA or DNA reads are provided, respsectively. 
-    
-    The main workflow can take up a lot of disk space with intermediate fastq files. 
-    
-    If this is a problem, the workflow can be run as two separate modules.
-    The decontaminate module removes the intermediate files and is not compatible with nextflow -resume
-    The classify module is still compatible with nextflow -resume because the smaller intemediate files are kept in the nextflow work/ directory
-    The classify module assumes gzipped compressed reads as direct inputs to Kraken2
-    
-    Usage for alternative workflow:
-    nextflow run main.nf -entry decontaminate [args]...
-    nextflow run main.nf -entry classify [args]...
-    
-    Input and database arguments are null by default.
-    Rather than manually specifying the paths to so many databases, it is best to create a custom nextflow config file.
-     
-    Input arguments:
-      --rna_list                    Path to a three column csv file with headers: id,read1,read2 for metatranscriptomic reads. If not defined, workflow will search input folder for all valid input fastq files. 
-	  --dna_list                    Path to a three column csv file with headers: id,read1,read2 for metagenomic reads. If not defined, workflow will search input folder for all valid input fastq files.
-	  --rna_reads                   Path to a folder containing all input metatranscriptomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
-      --dna_reads                   Path to a folder containing all input metagenomic reads (this will be recursively searched for *fastq.gz/*fq.gz/*fq/*fastq files)
-    Database arguments:
-      --bwaidx_path                 Path to the folder with host (human) reference genome and bwa index
-      --bwaidx			    Name of the bwa index e.g. hg38.fa
-      --star_index                  Path to the directory containing the index for the human genome for STAR aligner
-      --ribokmers                   Path to the eukaryotic and prokaryotic ribokmer database for computational rRNA removal using BBmap
-      --kraken2db                   Path to the Kraken2 and Bracken databases
-      --pangenome_path              Path to the folder with bowtie2 index for custom-built microbial pangenome/gene catalog
-      --pangenome                   Name of the bowtie2 index for the pangenome/gene catalog e.g. IHSMGC
-      --dmnddb                      Path to a custom-built Diamond 2 database (e.g. *.dmnd)
-      --eggnog_db                   Path to folder containing the eggnog database
-      --eggnog_OG_annots            Path to a pre-built e5.og_annotations.tsv file, downloaded from http://eggnog5.embl.de/download/eggnog_5.0, sorted by EGGNOG ID
-      --uniref90_fasta              Path to fasta file containing amino acid sequences from Uniref90
-      --uniref90_GO                 Path to two column .tsv file derived from https://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/idmapping/idmapping_selected.tab.gz
-      --pangenome_annots            Path to pre-computed eggnog annotations for pangenome
-      --spike_in_path		    Path to file denoting genera/species to remove from metagenomes before functional profiling, because they are spike-ins
-    Bracken options:
-      --readlength                  Length of Bracken k-mers to use [default: 150]
-    Workflow options:
-      -entry                        Can be one of [decontaminate, classify]. For disk space saving workflows. Note SINGLE dash.
-      --process_rna                 Turns on steps to process metatranscriptomes [Default: true]. If true, --rna_reads is a mandatory argument
-      --process_dna                 Turns on steps to process metagenomes [Default: true]. If true, --dna_reads is a mandatory argument
-      --decont_off                  Skip trimming, QC and decontamination steps [Default: false]
-	  --dedupe						Perform de-duplication using clumpify.sh for RNA reads [Default: true]
-	  --remove_rRNA					Perform computational rRNA removal [Default: true]
-      --profilers_off               Skip Kraken2 and Bracken steps [Default: false]
-      --panalign_off                Skip pangenome alignment with bowtie 2. Will also skip translated search with Diamond [Default: false]
-      --diamond_off                 Skip translated search with Diamond [Default: false]
-      --remove_spikes	  	    Removes spike in sequences from metagenomes [Default: true]
-      --annotate_off                Skip functional annotation using Eggnog and Uniref90 [Default: false]
-    Output arguments:
-      --outdir                      The output directory where the results will be saved [Default: ./pipeline_results]
-      --tracedir                    The directory where nextflow logs will be saved [Default: ./pipeline_results/pipeline_info]
-    AWSBatch arguments:
-      --awsregion                   The AWS Region for your AWS Batch job to run on [Default: false]
-      --awsqueue                    The AWS queue for your AWS Batch job to run on [Default: false]
-    Others:
-      --help		            Display this help message
-    """
-}
-
-if (params.help){
-    helpMessage()
-    exit 0
-}
-
-
-
 if (!params.rna_reads && !params.dna_reads){
     helpMessage()
     log.info"""
@@ -198,35 +101,55 @@ if (!params.spike_in_path && params.rm_spikes){
 */
 
 if (params.process_rna && params.rna_list){
-	Channel
-	.fromPath(params.rna_list)
-	.splitCsv(header: true)
-	.map { row ->
-	// Recursively find files matching the sample name pattern
-	def read1_files = file("${params.rna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
-	def read2_files = file("${params.rna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
-	// Take the first match (or add validation)
-	tuple(row.id, tuple(read1_files[0], read2_files[0]))
-	}
-	.set{ ch_rna_input }
-	} else if (params.process_rna && !params.rna_list){
-	Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
+        Channel
+        .fromPath(params.rna_list)
+        .splitCsv(header: true)
+        .map { row ->
+        // Recursively find files matching the sample name pattern
+        def read1_files = files("${params.rna_reads}/**/*${row.id}*{_R1,_1}*.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/*${row.id}*{_R1,_1}*.{fastq,fq}.gz")
+        
+        def read2_files = files("${params.rna_reads}/**/*${row.id}*{_R2,_2}*.{fastq,fq}.gz") + 
+                          files("${params.rna_reads}/*${row.id}*{_R2,_2}*.{fastq,fq}.gz")
+        
+        read1_files = read1_files.unique()
+        read2_files = read2_files.unique()
+        
+        if (read1_files.size() == 0) error "No R1 found for RNA: ${row.id}"
+        if (read2_files.size() == 0) error "No R2 found for RNA: ${row.id}"
+        
+
+        tuple(row.id, tuple(read1_files[0], read2_files[0]))
+        }
+        .set{ ch_rna_input }
+} else if (params.process_rna && !params.rna_list){
+        Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
 }
 
 if (params.process_dna && params.dna_list){
-	Channel
-	.fromPath(params.dna_list)
-	.splitCsv(header: true)
-	.map { row ->
-	// Recursively find files matching the sample name pattern
-	def read1_files = file("${params.dna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
-	def read2_files = file("${params.dna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
-	// Take the first match (or add validation)
-	tuple(row.id, tuple(read1_files[0], read2_files[0]))
-	}
-	.set{ ch_dna_input }
+        Channel
+        .fromPath(params.dna_list)
+        .splitCsv(header: true)
+        .map { row ->
+        // Recursively find files matching the sample name pattern
+        def read1_files = files("${params.dna_reads}/**/*${row.id}*{_R1,_1}*.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/*${row.id}*{_R1,_1}*.{fastq,fq}.gz")
+        
+        def read2_files = files("${params.dna_reads}/**/*${row.id}*{_R2,_2}*.{fastq,fq}.gz") + 
+                          files("${params.dna_reads}/*${row.id}*{_R2,_2}*.{fastq,fq}.gz")
+        
+        read1_files = read1_files.unique()
+        read2_files = read2_files.unique()
+        
+        if (read1_files.size() == 0) error "No R1 found for DNA: ${row.id}"
+        if (read2_files.size() == 0) error "No R2 found for DNA: ${row.id}"
+        
+
+        tuple(row.id, tuple(read1_files[0], read2_files[0]))
+        }
+        .set{ ch_dna_input }
 } else if (params.process_dna && !params.dna_list){
-	Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
+        Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
 }
 
 /*

@@ -128,35 +128,55 @@ if (!params.spike_in_path && params.rm_spikes){
 */
 
 if (params.process_rna && params.rna_list){
-	Channel
-	.fromPath(params.rna_list)
-	.splitCsv(header: true)
-	.map { row ->
-	// Recursively find files matching the sample name pattern
-	def read1_files = file("${params.rna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
-	def read2_files = file("${params.rna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
-	// Take the first match (or add validation)
-	tuple(row.id, tuple(read1_files[0], read2_files[0]))
-	}
-	.set{ ch_rna_input }
-	} else if (params.process_rna && !params.rna_list){
-	Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
+        Channel
+        .fromPath(params.rna_list)
+        .splitCsv(header: true)
+        .map { row ->
+        // Recursively find files matching the sample name pattern
+        def read1_files = files("${params.rna_reads}/**/*${row.id}*{_R1,_1}*.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/*${row.id}*{_R1,_1}*.{fastq,fq}.gz")
+        
+        def read2_files = files("${params.rna_reads}/**/*${row.id}*{_R2,_2}*.{fastq,fq}.gz") + 
+                          files("${params.rna_reads}/*${row.id}*{_R2,_2}*.{fastq,fq}.gz")
+        
+        read1_files = read1_files.unique()
+        read2_files = read2_files.unique()
+        
+        if (read1_files.size() == 0) error "No R1 found for RNA: ${row.id}"
+        if (read2_files.size() == 0) error "No R2 found for RNA: ${row.id}"
+        
+
+        tuple(row.id, tuple(read1_files[0], read2_files[0]))
+        }
+        .set{ ch_rna_input }
+} else if (params.process_rna && !params.rna_list){
+        Channel.fromFilePairs( [params.rna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_rna_input }
 }
 
 if (params.process_dna && params.dna_list){
-	Channel
-	.fromPath(params.dna_list)
-	.splitCsv(header: true)
-	.map { row ->
-	// Recursively find files matching the sample name pattern
-	def read1_files = file("${params.dna_reads}/**/*${row.id}*1.{fastq,fq}.gz")
-	def read2_files = file("${params.dna_reads}/**/*${row.id}*2.{fastq,fq}.gz")
-	// Take the first match (or add validation)
-	tuple(row.id, tuple(read1_files[0], read2_files[0]))
-	}
-	.set{ ch_dna_input }
+        Channel
+        .fromPath(params.dna_list)
+        .splitCsv(header: true)
+        .map { row ->
+        // Recursively find files matching the sample name pattern
+        def read1_files = files("${params.dna_reads}/**/*${row.id}*{_R1,_1}*.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/*${row.id}*{_R1,_1}*.{fastq,fq}.gz")
+        
+        def read2_files = files("${params.dna_reads}/**/*${row.id}*{_R2,_2}*.{fastq,fq}.gz") + 
+                          files("${params.dna_reads}/*${row.id}*{_R2,_2}*.{fastq,fq}.gz")
+        
+        read1_files = read1_files.unique()
+        read2_files = read2_files.unique()
+        
+        if (read1_files.size() == 0) error "No R1 found for DNA: ${row.id}"
+        if (read2_files.size() == 0) error "No R2 found for DNA: ${row.id}"
+        
+
+        tuple(row.id, tuple(read1_files[0], read2_files[0]))
+        }
+        .set{ ch_dna_input }
 } else if (params.process_dna && !params.dna_list){
-	Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
+        Channel.fromFilePairs( [params.dna_reads + '/**{R,.,_}{1,2}*{fastq,fastq.gz,fq,fq.gz}'], checkIfExists:true ).set{ ch_dna_input }
 }
 
 
