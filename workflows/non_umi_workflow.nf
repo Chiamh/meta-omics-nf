@@ -133,11 +133,15 @@ if (params.process_rna && params.rna_list){
         .splitCsv(header: true)
         .map { row ->
         // Recursively find files matching the sample name pattern
-        def read1_files = files("${params.rna_reads}/**/*${row.id}*{_R1,_1}.{fastq,fq}.gz") +
-                          files("${params.rna_reads}/*${row.id}*{_R1,_1}.{fastq,fq}.gz")
-        
-        def read2_files = files("${params.rna_reads}/**/*${row.id}*{_R2,_2}.{fastq,fq}.gz") + 
-                          files("${params.rna_reads}/*${row.id}*{_R2,_2}.{fastq,fq}.gz")
+        def read1_files = files("${params.rna_reads}/**/*${row.id}*_R1_*.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/*${row.id}*_R1_*.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/**/*${row.id}*_1.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/*${row.id}*_1.{fastq,fq}.gz")
+						  
+        def read2_files = files("${params.rna_reads}/**/*${row.id}*_R2_*.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/*${row.id}*_R2_*.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/**/*${row.id}*_2.{fastq,fq}.gz") +
+                          files("${params.rna_reads}/*${row.id}*_2.{fastq,fq}.gz")
         
         read1_files = read1_files.unique()
         read2_files = read2_files.unique()
@@ -159,11 +163,15 @@ if (params.process_dna && params.dna_list){
         .splitCsv(header: true)
         .map { row ->
         // Recursively find files matching the sample name pattern
-        def read1_files = files("${params.dna_reads}/**/*${row.id}*{_R1,_1}.{fastq,fq}.gz") +
-                          files("${params.dna_reads}/*${row.id}*{_R1,_1}.{fastq,fq}.gz")
-        
-        def read2_files = files("${params.dna_reads}/**/*${row.id}*{_R2,_2}.{fastq,fq}.gz") + 
-                          files("${params.dna_reads}/*${row.id}*{_R2,_2}.{fastq,fq}.gz")
+        def read1_files = files("${params.dna_reads}/**/*${row.id}*_R1_*.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/*${row.id}*_R1_*.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/**/*${row.id}*_1.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/*${row.id}*_1.{fastq,fq}.gz")
+						  
+        def read2_files = files("${params.dna_reads}/**/*${row.id}*_R2_*.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/*${row.id}*_R2_*.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/**/*${row.id}*_2.{fastq,fq}.gz") +
+                          files("${params.dna_reads}/*${row.id}*_2.{fastq,fq}.gz")
         
         read1_files = read1_files.unique()
         read2_files = read2_files.unique()
